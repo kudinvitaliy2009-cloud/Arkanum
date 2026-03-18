@@ -3,1203 +3,1666 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Арканум — Вільна Енциклопедія (v2)</title>
+
+<!-- ═══════════════════════════════════════
+     SEO & SOCIAL META (Claude v3 addition)
+     Dynamic update happens in app.setPageMeta()
+═══════════════════════════════════════ -->
+<title>Арканум — Вільна Енциклопедія</title>
+<meta name="description" content="Арканум — безкоштовна двомовна енциклопедія з відкритим контентом. Статті з історії, науки, технологій та культури." />
+<meta name="keywords" content="енциклопедія, вікіпедія, знання, наука, культура, україна" />
+<meta name="author" content="Арканум Спільнота" />
+<meta name="robots" content="index, follow" />
+
+<!-- Open Graph -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Арканум" />
+<meta property="og:title" content="Арканум — Вільна Енциклопедія" />
+<meta property="og:description" content="Безкоштовна двомовна енциклопедія з відкритим контентом." />
+<meta property="og:image" content="https://arkhanum.vercel.app/og-default.png" />
+<meta property="og:url" content="https://arkhanum.vercel.app/" />
+<meta property="og:locale" content="uk_UA" />
+<meta property="og:locale:alternate" content="en_US" />
+
+<!-- Twitter Cards -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:site" content="@ArkhanumWiki" />
+<meta name="twitter:title" content="Арканум — Вільна Енциклопедія" />
+<meta name="twitter:description" content="Безкоштовна двомовна енциклопедія з відкритим контентом." />
+<meta name="twitter:image" content="https://arkhanum.vercel.app/og-default.png" />
+
+<!-- PWA Manifest (injected via JS below) -->
+<link rel="manifest" id="pwa_manifest" />
+<meta name="theme-color" content="#1a1208" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Арканум" />
+
+<!-- Canonical -->
+<link rel="canonical" href="https://arkhanum.vercel.app/" id="canonical_url" />
+
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <style>
-  :root {
-    --paper: #f7f3ec; --ink: #1a1208; --muted: #6b5a44; --gold: #b8860b;
-    --blue: #1a3a5c; --card: #fff; --glass: rgba(26,18,8,0.06);
-    --radius: 8px;
-    --fw-display: 'Playfair Display', Georgia, serif;
-    --fw-body: 'Source Serif 4', Georgia, serif;
+/* ═══════ DESIGN TOKENS (from Claude v1) ═══════ */
+:root {
+  --paper:#f7f3ec; --ink:#1a1208; --muted:#6b5a44; --gold:#b8860b; --gold-l:#d4a017;
+  --blue:#1a3a5c; --blue-l:#2a5a8c; --red:#8b1a1a;
+  --card:#fff; --glass:rgba(26,18,8,0.06); --border:#e6dfd4; --shadow:rgba(26,18,8,0.09);
+  --radius:8px;
+  --font-display:'Playfair Display',Georgia,serif;
+  --font-body:'Source Serif 4',Georgia,serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --sidebar-w:220px;
+  --header-h:64px;
+}
+.dark {
+  --paper:#1a1208; --ink:#f7f3ec; --muted:#b8a992; --gold:#d4af37; --gold-l:#e8c547;
+  --blue:#5da9e9; --blue-l:#7ec8ff;
+  --card:#231a10; --glass:rgba(247,243,236,0.06); --border:#3d3020; --shadow:rgba(0,0,0,0.3);
+}
+
+/* ═══════ RESET ═══════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;scroll-behavior:smooth}
+body{font-family:var(--font-body);background:var(--paper);color:var(--ink);
+  line-height:1.65;min-height:100vh;transition:background .3s,color .3s}
+a{color:var(--blue-l);text-decoration:none;transition:color .2s}
+a:hover{text-decoration:underline;color:var(--gold)}
+img{max-width:100%;height:auto}
+mark{background:var(--gold);padding:0 3px;border-radius:2px;color:var(--ink)}
+
+/* ═══════ GOOGLE FONTS ═══════ */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Source+Serif+4:opsz,wght@8..60,300;8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ═══════ HEADER ═══════ */
+header{
+  background:var(--ink);color:var(--paper);
+  padding:0 16px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  border-bottom:3px solid var(--gold);
+  height:var(--header-h);
+  position:sticky;top:0;z-index:200;
+}
+.logo{display:flex;gap:10px;align-items:center;cursor:pointer;flex-shrink:0;text-decoration:none}
+.logo-emblem{
+  width:44px;height:44px;border-radius:50%;border:2px solid var(--gold);
+  display:grid;place-items:center;
+  font-family:var(--font-display);font-weight:900;font-size:1.3rem;color:var(--gold);
+}
+.logo-name{font-family:var(--font-display);font-weight:900;font-size:1.2rem;color:var(--paper)}
+.logo-sub{font-size:.68rem;color:#d9c89b;letter-spacing:.07em}
+
+.header-search{
+  flex:1;max-width:520px;
+  display:flex;background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.15);border-radius:6px;overflow:hidden;
+  transition:border-color .2s;
+}
+.header-search:focus-within{border-color:var(--gold)}
+.header-search input{
+  flex:1;background:none;border:none;outline:none;
+  color:var(--paper);font-family:var(--font-body);font-size:.9rem;padding:.5rem .85rem;
+}
+.header-search input::placeholder{color:rgba(247,243,236,.35)}
+.header-search button{
+  background:var(--gold);border:none;cursor:pointer;
+  padding:.5rem .9rem;color:var(--ink);font-weight:700;font-size:.82rem;
+  transition:background .2s;
+}
+.header-search button:hover{background:var(--gold-l)}
+
+.header-controls{display:flex;gap:6px;align-items:center;flex-shrink:0}
+.lang-toggle{display:flex;border:1px solid rgba(255,255,255,.15);border-radius:4px;overflow:hidden}
+.lang-btn{
+  padding:.3rem .6rem;border:none;background:transparent;color:rgba(247,243,236,.6);
+  cursor:pointer;font-weight:700;font-size:.75rem;font-family:var(--font-mono);
+  transition:all .2s;
+}
+.lang-btn.active{background:var(--gold);color:var(--ink)}
+.btn{
+  padding:.38rem .75rem;border-radius:5px;border:none;cursor:pointer;
+  font-weight:700;font-size:.8rem;transition:all .2s;
+}
+.btn-outline{background:transparent;color:var(--paper);border:1px solid rgba(255,255,255,.2)}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.btn-solid{background:var(--gold);color:var(--ink)}
+.btn-solid:hover{background:var(--gold-l)}
+.btn-icon{background:transparent;color:rgba(247,243,236,.7);border:1px solid rgba(255,255,255,.15);width:34px;padding:0;display:grid;place-items:center;font-size:1rem}
+.btn-icon:hover{border-color:var(--gold);color:var(--gold)}
+
+/* Hamburger — Claude v3 addition */
+.hamburger{display:none;background:transparent;border:none;cursor:pointer;
+  padding:6px;color:var(--paper);flex-direction:column;gap:4px;align-items:center;justify-content:center}
+.hamburger span{display:block;width:22px;height:2px;background:currentColor;transition:all .3s}
+@media(max-width:900px){.hamburger{display:flex}}
+@media(max-width:900px){.header-search{max-width:none}}
+
+/* ═══════ TOP NAV ═══════ */
+nav.topnav{
+  background:var(--ink);border-bottom:1px solid rgba(255,255,255,.05);
+  overflow-x:auto;
+}
+nav.topnav .inner{max-width:1200px;margin:0 auto;padding:0 16px;display:flex}
+nav.topnav a{
+  color:rgba(247,243,236,.65);font-size:.75rem;padding:.5rem 1rem;
+  text-transform:uppercase;letter-spacing:.07em;white-space:nowrap;
+  border-bottom:2px solid transparent;transition:all .2s;text-decoration:none;
+}
+nav.topnav a:hover,.topnav a.active{color:var(--gold-l);border-bottom-color:var(--gold)}
+
+/* ═══════ BREADCRUMBS — Claude v3 addition ═══════ */
+.breadcrumbs{
+  background:var(--card);border-bottom:1px solid var(--border);
+  padding:.45rem 16px;font-size:.78rem;font-family:var(--font-mono);
+  display:none; /* shown only in article view */
+}
+.breadcrumbs.visible{display:block}
+.breadcrumbs ol{list-style:none;display:flex;align-items:center;gap:.35rem;flex-wrap:wrap;max-width:1200px;margin:0 auto}
+.breadcrumbs li{display:flex;align-items:center;gap:.35rem;color:var(--muted)}
+.breadcrumbs li:not(:last-child)::after{content:'›';color:var(--border)}
+.breadcrumbs li a{color:var(--blue-l)}
+.breadcrumbs li:last-child{color:var(--ink);font-weight:500}
+
+/* ═══════ LAYOUT ═══════ */
+.app-wrap{
+  max-width:1200px;margin:0 auto;
+  display:grid;grid-template-columns:var(--sidebar-w) 1fr 240px;
+  gap:18px;padding:18px 12px;
+}
+@media(max-width:1100px){.app-wrap{grid-template-columns:var(--sidebar-w) 1fr}.right-col{display:none}}
+@media(max-width:900px){.app-wrap{grid-template-columns:1fr}.right-col{display:none}}
+
+/* Mobile sidebar overlay — Claude v3 addition */
+.left-col{background:var(--card);border:1px solid var(--border);padding:14px;border-radius:10px;align-self:start}
+@media(max-width:900px){
+  .left-col{
+    position:fixed;top:0;left:0;bottom:0;width:280px;z-index:300;
+    border-radius:0;transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
+    overflow-y:auto;padding-top:calc(var(--header-h) + 12px);
+    box-shadow:4px 0 24px rgba(0,0,0,.25);
   }
-  .dark {
-    --paper: #1a1208; --ink: #f7f3ec; --muted: #b8a992; --gold: #d4af37;
-    --blue: #5da9e9; --card: #2a1f14; --glass: rgba(247,243,236,0.08);
+  .left-col.open{transform:translateX(0)}
+  .sidebar-overlay{
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:290;
   }
-  * { box-sizing: border-box }
-  html, body { height: 100%; margin: 0; font-family: var(--fw-body); background: var(--paper); color: var(--ink); transition: background 0.3s, color 0.3s; }
-  a { color: var(--blue); text-decoration: none }
-  a:hover { text-decoration: underline }
-  
-  header { background: var(--ink); color: var(--paper); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid var(--gold) }
-  .logo { display: flex; gap: 12px; align-items: center; cursor: pointer }
-  .logo-emblem { width: 48px; height: 48px; border-radius: 999px; border: 2px solid var(--gold); display: grid; place-items: center; font-family: var(--fw-display); font-weight: 900; color: var(--gold); background: transparent }
-  .logo-text .name { font-family: var(--fw-display); font-weight: 900; font-size: 1.25rem }
-  .controls { display: flex; gap: 8px; align-items: center }
-  .lang-btn { padding: .35rem .6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,.12); background: transparent; color: var(--paper); cursor: pointer; font-weight: 700 }
-  .lang-btn.active { background: var(--gold); color: var(--ink); border-color: var(--gold) }
-  .btn { padding: .4rem .75rem; border-radius: 6px; border: none; cursor: pointer; font-weight: 700; background: var(--card); color: var(--ink) }
-  .btn:hover { filter: brightness(0.95) }
-  .btn-outline { background: transparent; color: var(--paper); border: 1px solid rgba(255,255,255,.12) }
-  .btn-solid { background: var(--gold); color: var(--ink) }
-  
-  nav.topnav { background: var(--ink); padding: .4rem 16px; border-bottom: 1px solid rgba(255,255,255,.04) }
-  nav.topnav a { color: rgba(247,243,236,.75); font-size: .82rem; margin-right: 12px; text-transform: uppercase; letter-spacing: .06em }
-  
-  .app-wrap { max-width: 1200px; margin: 18px auto; display: grid; grid-template-columns: 220px 1fr 240px; gap: 18px; padding: 0 12px }
-  @media(max-width: 980px) { .app-wrap { grid-template-columns: 1fr; padding: 0 12px } .left-col, .right-col { display: none } }
-  
-  .left-col, .right-col { background: var(--card); border: 1px solid #e6dfd4; padding: 12px; border-radius: 10px }
-  .left-col h4 { margin: 0 0 8px 0; font-family: var(--fw-display); color: var(--muted); font-size: .85rem; text-transform: uppercase; letter-spacing: .08em }
-  .left-col ul { list-style: none; padding: 0; margin: 0 }
-  .left-col li { margin: 8px 0 }
-  .badge { background: var(--paper); padding: .15rem .5rem; border-radius: 4px; font-family: monospace; font-size: .78rem; color: var(--muted); margin-left: 6px }
-  
-  main { min-height: 60vh }
-  .search-row { display: flex; gap: 8px; margin-bottom: 14px; align-items: center }
-  .search-row input, .search-row select { padding: 8px; border-radius: 8px; border: 1px solid #ddd; flex: 1; background: var(--card); color: var(--ink) }
-  .card { background: var(--card); border: 1px solid #e6dfd4; padding: 14px; border-radius: 10px; box-shadow: 0 4px 18px rgba(26,18,8,0.04); margin-bottom: 14px }
-  
-  <!-- Встав це в <style> після існуючих правил для dark mode -->
-  .dark nav.topnav a { color: rgba(247,243,236,.9) !important }
-  .dark nav.topnav a:hover { color: var(--gold) !important }
-  .dark .logo-text .name { color: var(--paper) }
-  .dark .logo span { color: #d9c89b }
-  .featured { display: grid; grid-template-columns: 1fr 260px; gap: 0; overflow: hidden }
-  .featured .body { padding: 18px }
-  .featured .img { background: linear-gradient(135deg, var(--ink), var(--blue)); color: rgba(255,255,255,.15); display: flex; align-items: flex-end; justify-content: center; padding: 12px; min-height: 180px }
-  
-  .categories-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px }
-  .cat-card { padding: 10px; border-radius: 8px; border: 1px solid var(--glass); background: var(--card); text-align: center; cursor: pointer }
-  
-  .article-header { border-bottom: 1px solid #eee; padding-bottom: 12px; margin-bottom: 12px }
-  .article-title { font-family: var(--fw-display); font-size: 2rem; margin: 0 0 6px 0 }
-  .article-sub { color: var(--muted); font-style: italic; margin: 0 }
-  
-  .infobox { float: right; width: 260px; background: var(--paper); border: 1px solid #e6dfd4; padding: 12px; border-radius: 8px; margin-left: 14px; margin-bottom: 12px }
-  .toc { background: var(--paper); border: 1px solid #e6dfd4; padding: 10px; border-radius: 8px; margin-bottom: 12px; float: right; width: 240px }
-  
-  .tabs { display: flex; gap: 6px; margin: 12px 0 }
-  .tab-btn { padding: 8px 12px; border-radius: 8px; border: 1px solid #eee; background: transparent; cursor: pointer; color: var(--ink) }
-  .tab-btn.active { background: var(--gold); color: var(--ink); border-color: var(--gold) }
-  
-  .edit-area input, .edit-area textarea { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 8px; background: var(--card); color: var(--ink) }
-  .section-block { border: 1px dashed #e6dfd4; padding: 10px; border-radius: 8px; margin-bottom: 8px }
-  
-  .hidden { display: none !important }
-  
-  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; z-index: 9999 }
-  .modal-box { background: var(--card); padding: 18px; border-radius: 10px; min-width: 320px; max-width: 90%; color: var(--ink) }
-  
-  footer { max-width: 1200px; margin: 20px auto; padding: 18px; color: var(--muted); font-size: .9rem; text-align: center }
-  mark { background: var(--gold); padding: 0 4px; border-radius: 3px; color: var(--ink) }
+  .sidebar-overlay.visible{display:block}
+}
+
+.left-col h4{
+  font-family:var(--font-display);font-size:.78rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:.09em;color:var(--muted);
+  margin:12px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border);
+}
+.left-col h4:first-child{margin-top:0}
+.left-col ul{list-style:none}
+.left-col li{margin:6px 0}
+.left-col li a{font-size:.85rem;color:var(--ink-2,var(--ink));display:flex;gap:.4rem;align-items:center}
+.left-col li a::before{content:'›';color:var(--gold)}
+.left-col li a:hover{color:var(--blue-l);text-decoration:none}
+.badge{
+  background:var(--paper);padding:.1rem .4rem;border-radius:3px;
+  font-family:var(--font-mono);font-size:.7rem;color:var(--muted);margin-left:auto;
+}
+
+/* ═══════ MAIN ═══════ */
+main{min-height:60vh}
+
+/* Search row */
+.search-row{display:flex;gap:8px;align-items:center}
+.search-row input,.search-row select{
+  padding:8px 10px;border-radius:6px;border:1px solid var(--border);
+  background:var(--card);color:var(--ink);font-family:var(--font-body);font-size:.9rem;
+}
+.search-row input{flex:1}
+.search-row .btn{background:var(--gold);color:var(--ink);border:none}
+.search-row .btn:hover{background:var(--gold-l)}
+
+/* Card */
+.card{
+  background:var(--card);border:1px solid var(--border);
+  padding:14px;border-radius:10px;
+  box-shadow:0 2px 10px var(--shadow);margin-bottom:14px;
+}
+
+/* Featured */
+.featured{display:grid;grid-template-columns:1fr 240px;gap:0;overflow:hidden}
+.featured .body{padding:18px}
+.featured-label{font-size:.72rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--gold);margin-bottom:.5rem}
+.featured .img{
+  background:linear-gradient(135deg,var(--ink),var(--blue));
+  display:flex;align-items:center;justify-content:center;
+  font-size:4rem;color:rgba(255,255,255,.12);min-height:160px;
+}
+@media(max-width:600px){.featured{grid-template-columns:1fr}.featured .img{display:none}}
+
+/* Article list card */
+.art-card{display:flex;flex-direction:column;gap:4px;padding:12px 14px;cursor:pointer;transition:border-color .2s}
+.art-card:hover{border-color:var(--gold)}
+.art-card .art-title{font-family:var(--font-display);font-size:1.05rem;font-weight:700;color:var(--ink)}
+.art-card .art-title:hover{color:var(--blue-l)}
+.art-card .art-excerpt{font-size:.85rem;color:var(--muted);line-height:1.5}
+.art-card .art-meta{font-size:.72rem;font-family:var(--font-mono);color:var(--muted);margin-top:2px}
+
+/* ═══════ ARTICLE ═══════ */
+.article-toolbar{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:10px;flex-wrap:wrap;gap:8px;
+}
+.article-toolbar-left,.article-toolbar-right{display:flex;gap:6px;align-items:center}
+.btn-sm{
+  padding:.3rem .65rem;border-radius:5px;border:1px solid var(--border);
+  background:var(--card);color:var(--ink);cursor:pointer;font-size:.78rem;
+  font-weight:600;transition:all .2s;
+}
+.btn-sm:hover{border-color:var(--gold);color:var(--gold)}
+.btn-sm.active{background:var(--gold);border-color:var(--gold);color:var(--ink)}
+
+/* Share toast — Claude v3 addition */
+.share-toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--ink);color:var(--paper);padding:.6rem 1.2rem;border-radius:6px;
+  font-size:.85rem;font-family:var(--font-mono);
+  transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:9999;pointer-events:none;
+  border:1px solid var(--gold);
+}
+.share-toast.show{transform:translateX(-50%) translateY(0)}
+
+.article-header{border-bottom:1px solid var(--border);padding-bottom:14px;margin-bottom:14px}
+.article-cats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.cat-tag{
+  font-family:var(--font-mono);font-size:.68rem;padding:.15rem .5rem;
+  border-radius:3px;background:var(--paper);border:1px solid var(--border);color:var(--muted);
+}
+h1.article-title{font-family:var(--font-display);font-size:2rem;font-weight:900;color:var(--ink);line-height:1.1;margin-bottom:.4rem}
+.article-sub{color:var(--muted);font-style:italic}
+.article-meta-bar{
+  display:flex;gap:1rem;flex-wrap:wrap;margin-top:.6rem;
+  font-size:.73rem;font-family:var(--font-mono);color:var(--muted);
+}
+
+.infobox{
+  float:right;width:250px;background:var(--paper);border:1px solid var(--border);
+  padding:10px;border-radius:8px;margin:0 0 12px 14px;font-size:.82rem;
+}
+.infobox-title{
+  font-family:var(--font-display);font-weight:700;text-align:center;
+  padding:.35rem;background:var(--ink);color:var(--paper);border-radius:5px;margin-bottom:8px;
+}
+.infobox table{width:100%;border-collapse:collapse}
+.infobox td{padding:.25rem .4rem;border-bottom:1px solid var(--border);vertical-align:top}
+.infobox td:first-child{font-weight:600;color:var(--muted);width:45%;background:rgba(0,0,0,.02)}
+
+.toc{
+  float:right;background:var(--paper);border:1px solid var(--border);
+  padding:10px 12px;border-radius:8px;margin:0 0 12px 14px;
+  min-width:180px;max-width:240px;
+}
+.toc-title{font-family:var(--font-display);font-weight:700;font-size:.85rem;margin-bottom:6px}
+.toc ol{padding-left:1rem;font-size:.82rem}
+.toc li{margin:3px 0}
+
+.article-body h2{
+  font-family:var(--font-display);font-size:1.35rem;font-weight:700;
+  border-bottom:1px solid var(--border);padding-bottom:.3rem;margin:1.5rem 0 .7rem;
+}
+.article-body h3{font-family:var(--font-display);font-size:1.1rem;font-weight:700;margin:1rem 0 .4rem;color:var(--muted)}
+.article-body p{margin-bottom:.8rem;font-size:.93rem;color:var(--ink)}
+.article-body p:first-of-type{font-size:1rem}
+.clearfix::after{content:'';display:table;clear:both}
+
+/* Tabs */
+.tabs{display:flex;gap:6px;margin:14px 0 10px;border-bottom:1px solid var(--border);padding-bottom:8px}
+.tab-btn{
+  padding:.45rem .9rem;border-radius:5px 5px 0 0;border:1px solid transparent;
+  background:transparent;cursor:pointer;color:var(--muted);font-size:.82rem;font-weight:600;
+  transition:all .2s;
+}
+.tab-btn.active{background:var(--gold);color:var(--ink);border-color:var(--gold)}
+.tab-btn:hover:not(.active){color:var(--ink);border-color:var(--border)}
+
+/* Edit area */
+.edit-area label{display:block;font-size:.78rem;font-weight:700;color:var(--muted);margin:.7rem 0 .2rem;text-transform:uppercase;letter-spacing:.06em}
+.edit-area input,.edit-area textarea{
+  width:100%;padding:8px;border-radius:6px;
+  border:1px solid var(--border);background:var(--card);color:var(--ink);
+  font-family:var(--font-body);font-size:.9rem;
+}
+.edit-area textarea{resize:vertical}
+.section-block{border:1px dashed var(--border);padding:10px;border-radius:6px;margin-bottom:8px}
+
+/* ═══════ RIGHT SIDEBAR ═══════ */
+.right-col{align-self:start}
+.right-col .card{padding:12px}
+.right-col h4{font-family:var(--font-display);font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px}
+.right-col ul{list-style:none;padding:0}
+.right-col li{margin:6px 0;font-size:.85rem}
+.right-col li a::before{content:'›';color:var(--gold);margin-right:.3rem}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;text-align:center}
+.stat-item .num{font-family:var(--font-display);font-size:1.4rem;font-weight:900;color:var(--gold);display:block}
+.stat-item .lbl{font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+
+/* ═══════ FOOTER ═══════ */
+footer{background:var(--ink);color:rgba(247,243,236,.4);margin-top:2rem;padding:2rem 1rem 1.5rem}
+.footer-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:2rem;margin-bottom:1.5rem}
+@media(max-width:700px){.footer-inner{grid-template-columns:repeat(2,1fr)}}
+.footer-col h4{font-family:var(--font-display);color:var(--gold);font-size:.8rem;letter-spacing:.07em;text-transform:uppercase;margin-bottom:.6rem}
+.footer-col ul{list-style:none}
+.footer-col li{margin:4px 0}
+.footer-col a{font-size:.75rem;color:rgba(247,243,236,.35);transition:color .2s}
+.footer-col a:hover{color:var(--gold-l);text-decoration:none}
+.footer-bottom{
+  max-width:1200px;margin:.75rem auto 0;padding-top:.75rem;
+  border-top:1px solid rgba(255,255,255,.05);
+  text-align:center;font-size:.7rem;color:rgba(247,243,236,.2);
+}
+
+/* ═══════ MODAL ═══════ */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:9000}
+.modal-box{background:var(--card);padding:20px;border-radius:10px;min-width:300px;max-width:90%;color:var(--ink);border:1px solid var(--border)}
+.modal-box h3{font-family:var(--font-display);margin-bottom:12px}
+.modal-box input{width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--paper);color:var(--ink);font-size:.9rem;margin-bottom:10px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end}
+
+/* ═══════ UTILITIES ═══════ */
+.hidden{display:none!important}
+.mt8{margin-top:8px}
+.comment-block{padding:10px 0;border-bottom:1px dashed var(--border)}
+.comment-block:last-child{border-bottom:none}
+.history-item{padding:8px 0;border-bottom:1px dashed var(--border);font-size:.85rem}
+.history-item:last-child{border-bottom:none}
+
+/* Scroll animations */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.anim{animation:fadeUp .35s ease both}
+.anim-2{animation:fadeUp .35s .08s ease both}
+.anim-3{animation:fadeUp .35s .16s ease both}
+
+/* Dark mode overrides */
+.dark nav.topnav a{color:rgba(247,243,236,.8)!important}
+.dark .search-row input,.dark .search-row select{background:var(--card);border-color:var(--border)}
+.dark .edit-area input,.dark .edit-area textarea{background:var(--card);border-color:var(--border)}
+.dark .cat-tag{background:var(--card)}
+.dark .infobox,.dark .toc{background:var(--card)}
+.dark .badge{background:var(--card)}
 </style>
 </head>
 <body>
 
+<!-- ══════════ SIDEBAR OVERLAY (mobile) ══════════ -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- ══════════ HEADER ══════════ -->
 <header>
-  <div class="logo" onclick="app.showHome()">
-    <div class="logo-emblem">А</div>
-    <div class="logo-text">
-      <div class="name">Арканум</div>
-      <div style="font-size:.75rem;color:#d9c89b;letter-spacing:.06em">Вільна енциклопедія</div>
-    </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="hamburger" id="hamburger" onclick="toggleSidebar()" aria-label="Меню">
+      <span></span><span></span><span></span>
+    </button>
+    <a class="logo" onclick="app.showHome();return false;" href="#">
+      <div class="logo-emblem">А</div>
+      <div>
+        <div class="logo-name">Арканум</div>
+        <div class="logo-sub">Вільна енциклопедія</div>
+      </div>
+    </a>
   </div>
-  <div class="controls">
-    <button class="lang-btn active" id="lang_uk" onclick="app.setLang('uk')">UKR</button>
-    <button class="lang-btn" id="lang_en" onclick="app.setLang('en')">ENG</button>
-    <button class="btn btn-outline" id="btn_profile" onclick="app.openProfile()">👤 <span id="ui_username">—</span></button>
-    <button class="btn btn-solid" id="btn_create" onclick="app.openRequest()">✚ <span id="btn_create_text">Створити</span></button>
-    <button class="btn btn-outline" onclick="app.toggleDarkMode()">🌙</button>
+
+  <div class="header-search">
+    <input type="text" id="searchInput" placeholder="Пошук статей…" onkeydown="if(event.key==='Enter')app.search()">
+    <button onclick="app.search()">🔍</button>
+  </div>
+
+  <div class="header-controls">
+    <div class="lang-toggle">
+      <button class="lang-btn active" id="lang_uk" onclick="app.setLang('uk')">УКР</button>
+      <button class="lang-btn" id="lang_en" onclick="app.setLang('en')">ENG</button>
+    </div>
+    <button class="btn btn-icon" onclick="app.toggleDarkMode()" title="Темна тема">🌙</button>
+    <button class="btn btn-outline" onclick="app.openProfile()">👤 <span id="ui_username">—</span></button>
+    <button class="btn btn-solid" onclick="app.openRequest()">✚ <span id="btn_create_text">Створити</span></button>
   </div>
 </header>
 
+<!-- ══════════ TOP NAV ══════════ -->
 <nav class="topnav">
-  <div style="max-width:1200px;margin:0 auto;padding:4px 12px">
-    <a href="#" onclick="app.showHome()"><span id="nav_home">Головна</span></a>
-    <a href="#"><span id="nav_portals">Портали</span></a>
-    <a href="#" onclick="app.showRecent()"><span id="nav_recent">Останні зміни</span></a>
-    <a href="#" onclick="app.randomArticle()"><span id="nav_random">Випадкова</span></a>
+  <div class="inner">
+    <a href="#" onclick="app.showHome();return false;" id="topnav_home">Головна</a>
+    <a href="#" id="topnav_portals">Портали</a>
+    <a href="#" onclick="app.showRecent();return false;" id="topnav_recent">Останні зміни</a>
+    <a href="#" onclick="app.randomArticle();return false;" id="topnav_random">Випадкова</a>
+    <a href="#" onclick="app.openRequest();return false;" id="topnav_request">Запит</a>
   </div>
 </nav>
 
+<!-- ══════════ BREADCRUMBS (Claude v3) ══════════ -->
+<nav class="breadcrumbs" id="breadcrumbs" aria-label="Навігація">
+  <ol id="breadcrumbs_list">
+    <li><a href="#" onclick="app.showHome();return false;" id="bc_home">Головна</a></li>
+  </ol>
+</nav>
+
+<!-- ══════════ SHARE TOAST (Claude v3) ══════════ -->
+<div class="share-toast" id="shareToast">🔗 Посилання скопійовано!</div>
+
+<!-- ══════════ LAYOUT ══════════ -->
 <div class="app-wrap">
-  <aside class="left-col">
-    <h4 id="left_nav_title">Навігація</h4>
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="left-col" id="leftSidebar">
+    <h4 id="sb_navigation">Навігація</h4>
     <ul>
-      <li><a href="#" onclick="app.showHome()"><span id="link_home">Головна сторінка</span></a></li>
-      <li><a href="#" onclick="app.openRequest()"><span id="link_request">Запит на статтю</span></a></li>
-      <li><a href="#" onclick="app.showRecent()"><span id="link_recent">Останні зміни</span> <span class="badge" id="badge_changes">0</span></a></li>
-      <li><a href="#" onclick="app.openProfile()"><span id="link_profile">Мій профіль</span></a></li>
+      <li><a href="#" onclick="app.showHome();closeSidebar();return false;" id="sb_home">Головна сторінка</a></li>
+      <li><a href="#" onclick="app.openRequest();closeSidebar();return false;" id="sb_request">Запит на статтю</a></li>
+      <li><a href="#" onclick="app.showRecent();closeSidebar();return false;" id="sb_recent">Останні зміни <span class="badge" id="badge_changes">0</span></a></li>
+      <li><a href="#" onclick="app.openProfile();closeSidebar();return false;" id="sb_profile">Мій профіль</a></li>
     </ul>
-    <h4 style="margin-top:12px"><span id="nav_categories">Розділи</span></h4>
+    <h4 id="sb_categories">Розділи</h4>
     <ul>
-      <li><a href="#" onclick="app.filterCategory('history')"><span id="cat_history">Історія</span> <span class="badge">3</span></a></li>
-      <li><a href="#" onclick="app.filterCategory('science')"><span id="cat_science">Наука</span> <span class="badge">2</span></a></li>
-      <li><a href="#" onclick="app.filterCategory('tech')"><span id="cat_tech">Технології</span> <span class="badge">4</span></a></li>
-      <li><a href="#" onclick="app.filterCategory('culture')"><span id="cat_culture">Культура</span> <span class="badge">2</span></a></li>
+      <li><a href="#" onclick="app.filterCategory('history');closeSidebar();return false;" id="sb_history">Історія <span class="badge">4</span></a></li>
+      <li><a href="#" onclick="app.filterCategory('science');closeSidebar();return false;" id="sb_science">Наука <span class="badge">2</span></a></li>
+      <li><a href="#" onclick="app.filterCategory('tech');closeSidebar();return false;" id="sb_tech">Технології <span class="badge">2</span></a></li>
+      <li><a href="#" onclick="app.filterCategory('culture');closeSidebar();return false;" id="sb_culture">Культура <span class="badge">2</span></a></li>
     </ul>
-    <h4 style="margin-top:12px"><span id="nav_tools">Інструменти</span></h4>
+    <h4 id="sb_tools">Інструменти</h4>
     <ul>
-      <li><a href="#" onclick="app.toggleDarkMode()"><span id="tool_theme">Тема: Тьмяна/Світла</span></a></li>
-      <li><a href="#" onclick="app.clearLocal()"><span id="tool_clear">Очистити localStorage</span></a></li>
+      <li><a href="#" onclick="app.toggleDarkMode();return false;" id="sb_theme">Темна / Світла тема</a></li>
+      <li><a href="#" onclick="app.clearLocal();return false;" id="sb_clear">Очистити сховище</a></li>
     </ul>
   </aside>
 
-  <main>
+  <!-- MAIN -->
+  <main id="mainArea">
+
+    <!-- HOME VIEW -->
     <section id="homeView">
-      <div class="search-row card">
-        <select id="searchCategory">
-          <option value=""><span id="search_all">Всі категорії</span></option>
-          <option value="history"><span id="cat_history_opt">Історія</span></option>
-          <option value="science"><span id="cat_science_opt">Наука</span></option>
-          <option value="tech"><span id="cat_tech_opt">Технології</span></option>
-          <option value="culture"><span id="cat_culture_opt">Культура</span></option>
-        </select>
-        <input id="searchInput" placeholder="🔍 Пошук..." onkeyup="if(event.key==='Enter') app.search();">
-        <button class="btn" onclick="app.search()"><span id="btn_search">Знайти</span></button>
+      <div class="card anim">
+        <div class="search-row">
+          <select id="searchCategory">
+            <option value="" id="src_all">Всі категорії</option>
+            <option value="history" id="src_history">Історія</option>
+            <option value="science" id="src_science">Наука</option>
+            <option value="tech" id="src_tech">Технології</option>
+            <option value="culture" id="src_culture">Культура</option>
+          </select>
+          <input id="searchInputHome" placeholder="🔍 Пошук…" onkeydown="if(event.key==='Enter')app.search()">
+          <button class="btn" onclick="app.search()" id="btn_search">Знайти</button>
+        </div>
       </div>
 
-      <div class="card featured">
+      <div class="card featured anim-2">
         <div class="body">
-          <div style="display:flex;justify-content:space-between;align-items:start">
-            <div>
-              <div style="font-size:.8rem;color:var(--gold);font-weight:700;letter-spacing:.12em"><span id="featured_label">Стаття дня</span></div>
-              <h2 style="margin:.35rem 0 0 0" id="featured_title">—</h2>
-              <p id="featured_intro" style="color:var(--muted)"></p>
-              <div style="margin-top:10px">
-                <button class="btn btn-solid" onclick="app.loadArticle(app.featuredId)"><span id="btn_read">Читати</span></button>
-                <button class="btn" onclick="app.openRequest()"><span id="btn_request">Запит</span></button>
-              </div>
-            </div>
+          <div class="featured-label" id="featured_label">Стаття дня</div>
+          <h2 style="font-family:var(--font-display);font-weight:900;margin:.3rem 0 .6rem;cursor:pointer" id="featured_title" onclick="app.loadArticle(app.featuredId)">—</h2>
+          <p style="color:var(--muted);font-size:.9rem" id="featured_intro"></p>
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <button class="btn btn-solid" onclick="app.loadArticle(app.featuredId)" id="btn_read">Читати →</button>
+            <button class="btn btn-outline" style="color:var(--ink);border-color:var(--border)" onclick="app.openRequest()" id="btn_request">Запит</button>
           </div>
         </div>
         <div class="img">⚙️</div>
       </div>
 
-      <div class="card">
-        <h3><span id="all_articles">Усі статті</span></h3>
+      <div class="card anim-3">
+        <h3 style="font-family:var(--font-display);margin-bottom:10px" id="all_articles">Усі статті</h3>
         <div id="articleList" style="display:grid;gap:8px"></div>
       </div>
     </section>
 
+    <!-- ARTICLE VIEW -->
     <section id="articleView" class="hidden">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <div>
-          <button class="btn" onclick="app.showHome()">← <span id="btn_back">Назад</span></button>
-          <button class="btn" id="btn_edit_article" onclick="app.enableEdit()" title="Редагувати">✏️</button>
-          <button class="btn" onclick="app.exportMarkdown()">⬇️ .md</button>
+      <div class="article-toolbar">
+        <div class="article-toolbar-left">
+          <button class="btn-sm" onclick="app.showHome()">← <span id="btn_back">Назад</span></button>
+          <button class="btn-sm" onclick="app.enableEdit()">✏️ <span id="btn_edit">Редагувати</span></button>
+          <button class="btn-sm" onclick="app.exportMarkdown()">⬇️ .md</button>
+          <!-- Share button — Claude v3 addition -->
+          <button class="btn-sm" onclick="app.shareArticle()" id="btn_share">🔗 <span id="btn_share_text">Поділитися</span></button>
         </div>
-        <div style="font-size:.9rem;color:var(--muted)">
-          <span id="meta_date"></span> · <span id="meta_views"></span>
+        <div class="article-toolbar-right" style="font-size:.78rem;color:var(--muted);font-family:var(--font-mono)">
+          <span id="meta_date"></span>
+          <span id="meta_views"></span>
         </div>
       </div>
+
       <article class="card">
         <div class="article-header">
-          <div id="article_cats" style="margin-bottom:6px"></div>
+          <div class="article-cats" id="article_cats"></div>
           <h1 class="article-title" id="article_title"></h1>
           <p class="article-sub" id="article_sub"></p>
-        </div>
-        <aside class="infobox" id="article_infobox" style="display:none"></aside>
-        <div id="article_content"></div>
-        <div id="article_toc" class="toc" style="display:none"></div>
-        
-        <div id="editArea" class="card hidden">
-          <div class="edit-area">
-            <label><span id="edit_title_lbl">Заголовок</span></label>
-            <input id="edit_title" />
-            <label><span id="edit_intro_lbl">Вступ (Markdown)</span></label>
-            <textarea id="edit_intro" rows="3"></textarea>
-            <label><span id="edit_image_lbl">URL зображення</span></label>
-            <input id="edit_image" />
-            <div id="sections_edit"></div>
-            <button class="btn btn-solid" onclick="app.saveEdit()">💾 <span id="btn_save">Зберегти</span></button>
-            <button class="btn" onclick="app.cancelEdit()">✖ <span id="btn_cancel">Скасувати</span></button>
-            <button class="btn" onclick="app.addSection()">+ <span id="btn_add_sec">Секція</span></button>
+          <div class="article-meta-bar">
+            <span id="meta_updated"></span>
+            <span id="meta_views_2"></span>
+            <span id="meta_length"></span>
           </div>
         </div>
 
-        <div style="clear:both"></div>
-        <div class="tabs" style="margin-top:12px">
-          <button class="tab-btn active" data-tab="content" onclick="app.switchTab(event,'content')"><span id="tab_article">Стаття</span></button>
-          <button class="tab-btn" data-tab="talk" onclick="app.switchTab(event,'talk')"><span id="tab_talk">Обговорення</span> <span id="talk_count" style="margin-left:6px;color:var(--muted)"></span></button>
-          <button class="tab-btn" data-tab="history" onclick="app.switchTab(event,'history')"><span id="tab_history">Історія</span></button>
+        <div class="clearfix">
+          <aside class="infobox" id="article_infobox" style="display:none"></aside>
+          <div class="toc" id="article_toc" style="display:none"></div>
+          <div class="article-body" id="article_content"></div>
         </div>
-        <div id="tab_content"></div>
-        <div id="tab_talk" class="hidden">
-          <div id="comments_list"></div>
-          <div style="margin-top:8px">
-            <input id="comment_name" placeholder="Ім'я (необов'язково)" />
-            <textarea id="comment_text" rows="3" placeholder="Ваш коментар"></textarea>
-            <div style="display:flex;gap:8px;align-items:center">
-              <button class="btn" onclick="app.addComment()"><span id="btn_comment_send">Відправити</span></button>
-              <small style="color:var(--muted)"><span id="comment_note">Локально</span></small>
+
+        <!-- Edit area -->
+        <div id="editArea" class="hidden" style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
+          <div class="edit-area">
+            <label id="lbl_title">Заголовок</label>
+            <input id="edit_title" />
+            <label id="lbl_intro">Вступ (Markdown)</label>
+            <textarea id="edit_intro" rows="3"></textarea>
+            <label id="lbl_image">URL зображення (необов'язково)</label>
+            <input id="edit_image" />
+            <div id="sections_edit"></div>
+            <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+              <button class="btn btn-solid" onclick="app.saveEdit()">💾 <span id="btn_save">Зберегти</span></button>
+              <button class="btn-sm" onclick="app.addSection()">+ <span id="btn_add_sec">Секція</span></button>
+              <button class="btn-sm" onclick="app.cancelEdit()">✖ <span id="btn_cancel">Скасувати</span></button>
             </div>
           </div>
         </div>
-        <div id="tab_history" class="hidden">
+
+        <div class="tabs" style="margin-top:14px">
+          <button class="tab-btn active" data-tab="content" onclick="app.switchTab(event,'content')"><span id="tab_article">Стаття</span></button>
+          <button class="tab-btn" data-tab="talk" onclick="app.switchTab(event,'talk')"><span id="tab_talk">Обговорення</span> <span id="talk_count" style="color:var(--muted);font-size:.75rem"></span></button>
+          <button class="tab-btn" data-tab="history" onclick="app.switchTab(event,'history')"><span id="tab_history">Історія</span></button>
+        </div>
+        <div id="tab_content_panel"></div>
+        <div id="tab_talk_panel" class="hidden">
+          <div id="comments_list"></div>
+          <div style="margin-top:12px;display:grid;gap:6px">
+            <input id="comment_name" placeholder="Нік (необов'язково)" style="padding:7px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--ink)"/>
+            <textarea id="comment_text" rows="3" placeholder="Ваш коментар (підтримує Markdown)" style="padding:7px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--ink);resize:vertical"></textarea>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button class="btn btn-solid" onclick="app.addComment()"><span id="btn_comment">Відправити</span></button>
+              <small style="color:var(--muted)">Локально · <span id="comment_note">не синхронізується</span></small>
+            </div>
+          </div>
+        </div>
+        <div id="tab_history_panel" class="hidden">
           <div id="history_list"></div>
         </div>
       </article>
     </section>
 
+    <!-- REQUEST VIEW -->
     <section id="requestView" class="hidden">
       <div class="card">
-        <h3><span id="req_title_ui">📩 Запит на статтю</span></h3>
-        <form onsubmit="app.submitRequest(event)">
-          <label><span id="req_name_lbl">Назва</span></label>
+        <h3 style="font-family:var(--font-display);margin-bottom:12px" id="req_heading">📩 Запит на статтю</h3>
+        <div class="edit-area">
+          <label id="lbl_req_title">Назва статті</label>
           <input id="req_title" required />
-          <label><span id="req_desc_lbl">Опис</span></label>
+          <label id="lbl_req_desc">Опис / причина</label>
           <textarea id="req_desc" rows="4"></textarea>
-          <div style="display:flex;gap:8px;margin-top:8px">
-            <button class="btn btn-solid" type="submit"><span id="btn_send">Надіслати</span></button>
-            <button class="btn" type="button" onclick="app.showHome()"><span id="btn_cancel_req">Скасувати</span></button>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button class="btn btn-solid" onclick="app.submitRequest()"><span id="btn_send">Надіслати</span></button>
+            <button class="btn-sm" onclick="app.showHome()"><span id="btn_cancel_req">Скасувати</span></button>
           </div>
-        </form>
-      </div>
-    </section>
-
-    <section id="recentView" class="hidden">
-      <div class="card">
-        <h3><span id="recent_title">Останні зміни</span></h3>
-        <div id="recent_list"></div>
-      </div>
-    </section>
-
-    <section id="profileView" class="hidden">
-      <div class="card">
-        <h3><span id="profile_title">Мій профіль</span></h3>
-        <p><span id="profile_nick_lbl">Нік:</span> <b id="profile_nick">—</b></p>
-        <p><span id="profile_edits_lbl">Правок:</span> <b id="profile_edits">0</b></p>
-        <p><span id="profile_comments_lbl">Коментарів:</span> <b id="profile_comments">0</b></p>
-        <div style="margin-top:8px">
-          <button class="btn" onclick="app.openLogin()"><span id="btn_change_nick">Змінити нік</span></button>
-          <button class="btn" onclick="app.logout()"><span id="btn_logout">Вийти</span></button>
         </div>
       </div>
     </section>
+
+    <!-- RECENT VIEW -->
+    <section id="recentView" class="hidden">
+      <div class="card">
+        <h3 style="font-family:var(--font-display);margin-bottom:12px" id="recent_heading">Останні зміни</h3>
+        <div id="recent_list"><p style="color:var(--muted)" id="no_recent">Немає змін.</p></div>
+      </div>
+    </section>
+
+    <!-- PROFILE VIEW -->
+    <section id="profileView" class="hidden">
+      <div class="card">
+        <h3 style="font-family:var(--font-display);margin-bottom:12px" id="profile_heading">Мій профіль</h3>
+        <p><span id="lbl_nick">Нік:</span> <b id="profile_nick">—</b></p>
+        <p style="margin-top:4px"><span id="lbl_edits">Правок:</span> <b id="profile_edits">0</b></p>
+        <p style="margin-top:4px"><span id="lbl_comments">Коментарів:</span> <b id="profile_comments">0</b></p>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn btn-solid" onclick="app.openLogin()"><span id="btn_change_nick">Змінити нік</span></button>
+          <button class="btn-sm" onclick="app.logout()"><span id="btn_logout">Вийти</span></button>
+        </div>
+      </div>
+    </section>
+
   </main>
 
+  <!-- RIGHT SIDEBAR -->
   <aside class="right-col">
     <div class="card">
-      <h4><span id="right_new_title">Нові статті</span></h4>
-      <ul id="right_new" style="padding-left:14px"></ul>
+      <h4 id="rp_new">Нові статті</h4>
+      <ul id="right_new"></ul>
     </div>
     <div class="card">
-      <h4><span id="right_stats_title">Статистика</span></h4>
-      <p id="right_stats">—</p>
+      <h4 id="rp_stats">Статистика</h4>
+      <div class="stat-grid" id="stat_grid">
+        <div class="stat-item"><span class="num" id="stat_arts">10</span><span class="lbl">Статей</span></div>
+        <div class="stat-item"><span class="num">2</span><span class="lbl">Мови</span></div>
+        <div class="stat-item"><span class="num" id="stat_edits">0</span><span class="lbl">Правок</span></div>
+        <div class="stat-item"><span class="num" id="stat_comments">0</span><span class="lbl">Коментарів</span></div>
+      </div>
     </div>
     <div class="card">
-      <h4><span id="right_actions">Швидкі дії</span></h4>
-      <button class="btn" onclick="app.randomArticle()"><span id="btn_random">Випадкова</span></button>
-      <button class="btn" onclick="app.showRecent()"><span id="btn_recent">Останні зміни</span></button>
+      <h4 id="rp_actions">Швидкі дії</h4>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <button class="btn-sm" onclick="app.randomArticle()" id="btn_random">🎲 Випадкова стаття</button>
+        <button class="btn-sm" onclick="app.showRecent()" id="btn_recent_rp">🕒 Останні зміни</button>
+      </div>
     </div>
   </aside>
-</div>
 
+</div><!-- /app-wrap -->
+
+<!-- ══════════ FOOTER ══════════ -->
 <footer>
-  <span id="footer_text">Текст доступний за ліцензією Creative Commons Attribution-ShareAlike 4.0. · Арканум — демонстраційний проект.</span>
+  <div class="footer-inner">
+    <div class="footer-col">
+      <h4>Арканум</h4>
+      <ul>
+        <li><a href="#">Про проект</a></li>
+        <li><a href="#">Правила</a></li>
+        <li><a href="#">Зв'язок</a></li>
+        <li><a href="#">Пожертвувати</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Участь</h4>
+      <ul>
+        <li><a href="#" onclick="app.openRequest();return false;">Запит на статтю</a></li>
+        <li><a href="#">Як редагувати</a></li>
+        <li><a href="#">Форум спільноти</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Мови</h4>
+      <ul>
+        <li><a href="#" onclick="app.setLang('uk');return false;">Українська</a></li>
+        <li><a href="#" onclick="app.setLang('en');return false;">English</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Правові</h4>
+      <ul>
+        <li><a href="#">CC BY-SA 4.0</a></li>
+        <li><a href="#">Конфіденційність</a></li>
+        <li><a href="#">Авторське право</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    Текст доступний за ліцензією Creative Commons Attribution-ShareAlike 4.0 · Арканум — демонстраційний проект<br>
+    <span style="color:rgba(255,255,255,.12)">Побудовано: Claude → ChatGPT → Qwen → Claude → DeepSeek → Grok</span>
+  </div>
 </footer>
 
-<div id="modal_login" class="modal" style="display:none">
+<!-- ══════════ LOGIN MODAL ══════════ -->
+<div class="modal hidden" id="modal_login">
   <div class="modal-box">
     <h3 id="modal_title">👤 Вхід</h3>
-    <div style="margin-bottom:8px"><input id="modal_nick" placeholder="Ваш нік (наприклад: Vitaliy)" /></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn" onclick="app.closeLogin()"><span id="modal_cancel">Скасувати</span></button>
-      <button class="btn btn-solid" onclick="app.saveLogin()"><span id="modal_save">Зберегти</span></button>
+    <input id="modal_nick" placeholder="Ваш нік…" onkeydown="if(event.key==='Enter')app.saveLogin()" />
+    <div class="modal-actions">
+      <button class="btn-sm" onclick="app.closeLogin()" id="modal_cancel">Скасувати</button>
+      <button class="btn btn-solid" onclick="app.saveLogin()" id="modal_save">Зберегти</button>
     </div>
   </div>
 </div>
 
 <script>
-/* ================= DATA & STORAGE ================= */
-const STORAGE_KEYS = {
-  ARTICLES: 'arcanum_articles_v2',
-  COMMENTS: 'arcanum_comments_v2',
-  HISTORY: 'arcanum_history_v2',
-  EDITS: 'arcanum_edits_v2',
-  USER: 'arcanum_user_v2',
-  REQUESTS: 'arcanum_requests_v2',
-  DARK: 'arcanum_dark_v2'
+/* ══════════════════════════════════════════════════
+   PWA MANIFEST INJECTION — Claude v3
+══════════════════════════════════════════════════ */
+(function injectManifest() {
+  const manifest = {
+    name: "Арканум — Вільна Енциклопедія",
+    short_name: "Арканум",
+    description: "Безкоштовна двомовна енциклопедія",
+    start_url: "/",
+    display: "standalone",
+    background_color: "#1a1208",
+    theme_color: "#b8860b",
+    lang: "uk",
+    icons: [
+      { src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231a1208'/><text y='.9em' font-size='80' x='10' fill='%23b8860b'>А</text></svg>", sizes: "any", type: "image/svg+xml" }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+  document.getElementById('pwa_manifest').href = URL.createObjectURL(blob);
+})();
+
+/* ══════════════════════════════════════════════════
+   STORAGE KEYS
+══════════════════════════════════════════════════ */
+const SK = {
+  ARTICLES: 'arcanum_articles_v3',
+  COMMENTS:  'arcanum_comments_v3',
+  HISTORY:   'arcanum_history_v3',
+  EDITS:     'arcanum_edits_v3',
+  USER:      'arcanum_user_v3',
+  REQUESTS:  'arcanum_requests_v3',
+  DARK:      'arcanum_dark_v3'
 };
 
-/* ================= 7 ARTICLES WITH FULL TRANSLATIONS ================= */
+/* ══════════════════════════════════════════════════
+   10 ARTICLES (7 from Qwen + 3 new from Claude v3)
+══════════════════════════════════════════════════ */
 const BASE_ARTICLES = [
-  {
-    id: 'antikythera',
-    category: 'history',
-    translations: {
-      uk: {
-        title: 'Антикитерський механізм',
-        intro: '**Антикитерський механізм** — давньогрецький аналоговий пристрій для обчислення астрономічних подій, знайдений у 1901 році.',
-        image: '',
-        sections: [
-          { title: 'Відкриття', content: 'Пристрій було знайдено у 1901 році серед уламків корабля біля острова Антикитера.' },
-          { title: 'Конструкція', content: 'Механізм містив більше 30 бронзових шестерень, що дозволяло моделювати рухи небесних тіл.' },
-          { title: 'Значення', content: 'Найдавніший відомий механічний комп\'ютер у світі, датований ~150–100 до н.е.' }
-        ],
-        stats: { views: 48240, updated: '2026-03-17' },
-        keywords: ['антикитера', 'механізм', 'греція', 'астрономія']
-      },
-      en: {
-        title: 'Antikythera Mechanism',
-        intro: '**Antikythera mechanism** — an ancient Greek analog device for astronomical calculations, discovered in 1901.',
-        image: '',
-        sections: [
-          { title: 'Discovery', content: 'Found in 1901 among shipwreck debris near Antikythera island.' },
-          { title: 'Construction', content: 'Contained over 30 bronze gears to model celestial motions.' },
-          { title: 'Significance', content: 'The oldest known mechanical computer in the world, dated ~150–100 BC.' }
-        ],
-        stats: { views: 48240, updated: '2026-03-17' },
-        keywords: ['antikythera', 'mechanism', 'greece', 'astronomy']
-      }
+  /* ─── 1 ─── */
+  { id: 'antikythera', category: 'history', translations: {
+    uk: {
+      title: 'Антикитерський механізм',
+      intro: '**Антикитерський механізм** — давньогрецький аналоговий пристрій для обчислення астрономічних явищ, знайдений у 1901 році біля острова Антикитера в Егейському морі.',
+      infobox: { 'Дата': 'бл. 150–100 до н.е.', 'Місце': 'Антикитера, Греція', 'Матеріал': 'Бронза', 'Розмір': '34×18×9 см', 'Зберігається': 'Нац. музей, Афіни' },
+      sections: [
+        { title: 'Відкриття', content: 'Пристрій знайдено у 1901 році серед уламків корабля на глибині 43 м. Наукове вивчення розпочав Дерек де Солла Прайс у 1951 р.' },
+        { title: 'Конструкція', content: 'Механізм містив **понад 37 бронзових шестерень**, деякі діаметром кілька міліметрів. Система передач моделювала нерівномірний рух Місяця за теорією Гіппарха.' },
+        { title: 'Функції', content: 'Передбачав сонячні та місячні затемнення, позиції планет, дати Олімпійських ігор. На тильній стороні — спіральні циферблати 19-річного циклу Метона та 18-річного Саросу.' }
+      ],
+      stats: { views: 48240, updated: '2026-03-17' },
+      keywords: ['антикитера', 'механізм', 'греція', 'астрономія', 'комп\'ютер']
+    },
+    en: {
+      title: 'Antikythera Mechanism',
+      intro: '**The Antikythera mechanism** is an ancient Greek analogue computer used to predict astronomical positions and eclipses, discovered in 1901 near the island of Antikythera.',
+      infobox: { 'Date': 'c. 150–100 BC', 'Location': 'Antikythera, Greece', 'Material': 'Bronze', 'Size': '34×18×9 cm', 'Housed at': 'National Museum, Athens' },
+      sections: [
+        { title: 'Discovery', content: 'Found in 1901 among shipwreck remains at 43 m depth. Scientific study began with Derek de Solla Price in 1951.' },
+        { title: 'Construction', content: 'Contains **over 37 bronze gears**, some only a few millimetres in diameter. The gear train modelled the Moon\'s irregular motion according to Hipparchus.' },
+        { title: 'Functions', content: 'Predicted solar and lunar eclipses, planetary positions, and Olympic Games dates. The back face has spiral dials for the 19-year Metonic cycle and 18-year Saros cycle.' }
+      ],
+      stats: { views: 48240, updated: '2026-03-17' },
+      keywords: ['antikythera', 'mechanism', 'greece', 'astronomy', 'computer']
     }
-  },
-  {
-    id: 'ai',
-    category: 'tech',
-    translations: {
-      uk: {
-        title: 'Штучний інтелект',
-        intro: '**Штучний інтелект (ШІ)** — галузь інформатики, що створює системи, які виконують завдання, що потребують людського інтелекту.',
-        image: '',
-        sections: [
-          { title: 'Історія', content: 'Термін запропоновано у 1956 році на конференції в Дартмуті.' },
-          { title: 'Застосування', content: 'Машинне навчання, комп\'ютерний зір, обробка природньої мови.' }
-        ],
-        stats: { views: 105300, updated: '2026-03-18' },
-        keywords: ['ai', 'штучний інтелект', 'машинне навчання']
-      },
-      en: {
-        title: 'Artificial Intelligence',
-        intro: '**Artificial Intelligence (AI)** is a field of computer science focused on creating intelligent machines.',
-        image: '',
-        sections: [
-          { title: 'History', content: 'The term was coined for the 1956 Dartmouth conference.' },
-          { title: 'Applications', content: 'Machine learning, computer vision, natural language processing.' }
-        ],
-        stats: { views: 105300, updated: '2026-03-18' },
-        keywords: ['ai', 'artificial intelligence', 'machine learning']
-      }
+  }},
+  /* ─── 2 ─── */
+  { id: 'ai', category: 'tech', translations: {
+    uk: {
+      title: 'Штучний інтелект',
+      intro: '**Штучний інтелект (ШІ)** — галузь інформатики, присвячена створенню систем, здатних виконувати завдання, що зазвичай потребують людського розуму.',
+      sections: [
+        { title: 'Історія', content: 'Термін запропоновано у 1956 р. на конференції в Дартмуті. Серед піонерів — Алан Тюрінг, Джон Маккарті, Марвін Мінський.' },
+        { title: 'Застосування', content: 'Машинне навчання, комп\'ютерний зір, обробка природньої мови, робототехніка, рекомендаційні системи.' }
+      ],
+      stats: { views: 105300, updated: '2026-03-18' },
+      keywords: ['штучний інтелект', 'машинне навчання', 'нейронна мережа']
+    },
+    en: {
+      title: 'Artificial Intelligence',
+      intro: '**Artificial Intelligence (AI)** is the field of computer science dedicated to building systems that can perform tasks typically requiring human intelligence.',
+      sections: [
+        { title: 'History', content: 'The term was coined at the 1956 Dartmouth conference. Pioneers include Alan Turing, John McCarthy, and Marvin Minsky.' },
+        { title: 'Applications', content: 'Machine learning, computer vision, natural language processing, robotics, recommendation systems.' }
+      ],
+      stats: { views: 105300, updated: '2026-03-18' },
+      keywords: ['artificial intelligence', 'machine learning', 'neural network']
     }
-  },
-  {
-    id: 'gemini',
-    category: 'tech',
-    translations: {
-      uk: {
-        title: 'Gemini',
-        intro: '**Gemini** — генеративна мультимодальна модель від Google, здатна працювати з текстом, зображеннями та кодом.',
-        image: '',
-        sections: [
-          { title: 'Особливості', content: 'Генерує текст, зображення, аналізує відео та має розширені можливості міркування.' }
-        ],
-        stats: { views: 850500, updated: '2026-03-18' },
-        keywords: ['gemini', 'google', 'ai', 'мультимодальний']
-      },
-      en: {
-        title: 'Gemini',
-        intro: '**Gemini** — a multimodal generative model by Google, capable of working with text, images, and code.',
-        image: '',
-        sections: [
-          { title: 'Features', content: 'Generates text, images, analyzes video, and has advanced reasoning capabilities.' }
-        ],
-        stats: { views: 850500, updated: '2026-03-18' },
-        keywords: ['gemini', 'google', 'ai', 'multimodal']
-      }
+  }},
+  /* ─── 3 ─── */
+  { id: 'kharkiv', category: 'culture', translations: {
+    uk: {
+      title: 'Місто Харків',
+      intro: '**Харків** — друге за населенням місто України (~1,4 млн), найважливіший культурний, науковий та промисловий центр сходу країни.',
+      infobox: { 'Засновано': '1654', 'Область': 'Харківська', 'Населення': '~1,4 млн', 'ВНЗ': '20+', 'Університет': 'ХНУ ім. Каразіна' },
+      sections: [
+        { title: 'Історія', content: 'Засновано як козацьке місто у 1654 р. Перша столиця Радянської України 1919–1934 рр. Зазнав значних руйнувань під час Другої світової та вторгнення 2022 р.' },
+        { title: 'Освіта і наука', content: 'Понад 20 університетів, у т.ч. один з найстаріших в Україні — ХНУ ім. В. Н. Каразіна (1804 р.). Місто має статус «університетської столиці».' }
+      ],
+      stats: { views: 32100, updated: '2026-03-10' },
+      keywords: ['харків', 'україна', 'місто', 'освіта', 'столиця']
+    },
+    en: {
+      title: 'Kharkiv',
+      intro: '**Kharkiv** is Ukraine\'s second-largest city (~1.4 million), the most important cultural, scientific and industrial centre in the east of the country.',
+      infobox: { 'Founded': '1654', 'Oblast': 'Kharkiv', 'Population': '~1.4 M', 'Universities': '20+', 'University': 'V.N. Karazin KhNU' },
+      sections: [
+        { title: 'History', content: 'Founded as a Cossack city in 1654. First capital of Soviet Ukraine 1919–1934. Suffered significant destruction in World War II and the 2022 invasion.' },
+        { title: 'Education & Science', content: 'Over 20 universities, including one of Ukraine\'s oldest — V.N. Karazin KhNU (1804). The city holds the informal title of "university capital".' }
+      ],
+      stats: { views: 32100, updated: '2026-03-10' },
+      keywords: ['kharkiv', 'ukraine', 'city', 'education', 'capital']
     }
-  },
-  {
-    id: 'kharkiv',
-    category: 'culture',
-    translations: {
-      uk: {
-        title: 'Місто Харків',
-        intro: '**Харків** — друге за населенням місто України, важливий культурний, науковий та промисловий центр.',
-        image: '',
-        sections: [
-          { title: 'Історія', content: 'Заснований у 1654 році як козацьке місто. Був першою столицею Радянської України (1919–1934).' },
-          { title: 'Сучасність', content: 'Великий університетський центр з понад 20 ВНЗ, включаючи ХНУ ім. Каразіна.' }
-        ],
-        stats: { views: 32100, updated: '2026-03-10' },
-        keywords: ['харків', 'україна', 'місто', 'освіта']
-      },
-      en: {
-        title: 'Kharkiv City',
-        intro: '**Kharkiv** — Ukraine\'s second-largest city, an important cultural, scientific, and industrial center.',
-        image: '',
-        sections: [
-          { title: 'History', content: 'Founded in 1654 as a Cossack city. Was the first capital of Soviet Ukraine (1919–1934).' },
-          { title: 'Today', content: 'Major university hub with over 20 higher education institutions, including Karazin University.' }
-        ],
-        stats: { views: 32100, updated: '2026-03-10' },
-        keywords: ['kharkiv', 'ukraine', 'city', 'education']
-      }
+  }},
+  /* ─── 4 ─── */
+  { id: 'constitution', category: 'history', translations: {
+    uk: {
+      title: 'Конституція',
+      intro: '**Конституція** — основний закон держави, що визначає її устрій, права та свободи громадян, систему органів влади.',
+      sections: [
+        { title: 'Перші конституції', content: 'Конституція США (1787) вважається першою чинною конституцією сучасного типу. Французька декларація прав (1789) закріпила ліберальні принципи.' },
+        { title: 'Конституція України', content: 'Прийнята 28 червня 1996 р. Складається з преамбули та 14 розділів. Гарантує права людини, парламентсько-президентський устрій.' }
+      ],
+      stats: { views: 18900, updated: '2026-03-15' },
+      keywords: ['конституція', 'право', 'закон', 'держава']
+    },
+    en: {
+      title: 'Constitution',
+      intro: '**A constitution** is the fundamental law of a state, defining its governance structure, citizens\' rights and freedoms, and the system of state bodies.',
+      sections: [
+        { title: 'First Constitutions', content: 'The US Constitution (1787) is considered the first enduring constitution of the modern type. The French Declaration (1789) enshrined liberal principles.' },
+        { title: 'Constitution of Ukraine', content: 'Adopted on 28 June 1996. Consists of a preamble and 14 sections. Guarantees human rights and a semi-presidential system.' }
+      ],
+      stats: { views: 18900, updated: '2026-03-15' },
+      keywords: ['constitution', 'law', 'rights', 'state']
     }
-  },
-  {
-    id: 'constitution',
-    category: 'culture',
-    translations: {
-      uk: {
-        title: 'Конституція',
-        intro: '**Конституція** — основний закон держави, що визначає її політичну систему, права громадян та структуру влади.',
-        image: '',
-        sections: [
-          { title: 'Історія', content: 'Перші конституції з\'явились у США (1787) та Франції (1791). Конституція України прийнята 28 червня 1996.' },
-          { title: 'Структура', content: 'Зазвичай містить преамбулу, розділи про права людини, державний устрій та порядок змін.' }
-        ],
-        stats: { views: 18900, updated: '2026-03-15' },
-        keywords: ['конституція', 'право', 'держава', 'закон']
-      },
-      en: {
-        title: 'Constitution',
-        intro: '**Constitution** — the fundamental law of a state defining its political system, citizens\' rights, and government structure.',
-        image: '',
-        sections: [
-          { title: 'History', content: 'First constitutions appeared in the USA (1787) and France (1791). Ukraine\'s Constitution was adopted June 28, 1996.' },
-          { title: 'Structure', content: 'Usually contains a preamble, sections on human rights, state structure, and amendment procedures.' }
-        ],
-        stats: { views: 18900, updated: '2026-03-15' },
-        keywords: ['constitution', 'law', 'state', 'rights']
-      }
+  }},
+  /* ─── 5 ─── */
+  { id: 'micronations', category: 'history', translations: {
+    uk: {
+      title: 'Мікронації',
+      intro: '**Мікронація** — суб\'єкт, що проголошує себе незалежною державою, але не визнаний міжнародною спільнотою.',
+      sections: [
+        { title: 'Відомі мікронації', content: '**Сіленд** (морська платформа у Північному морі), **Молоссія** (Невада, США), **Ш.Н.У.Р.** (Шкільна Народна Українська Республіка) — мікронації з власними конституціями та символами.' },
+        { title: 'Цілі', content: 'Мистецькі проекти, політичний протест, освітні ініціативи або просто захоплення. Деякі мають власні валюти, паспорти та поштові марки.' }
+      ],
+      stats: { views: 12400, updated: '2026-03-12' },
+      keywords: ['мікронація', 'сіленд', 'молоссія', 'ШНУР', 'державність']
+    },
+    en: {
+      title: 'Micronations',
+      intro: '**A micronation** is an entity that claims to be an independent nation or state but is not recognized by world governments or international organisations.',
+      sections: [
+        { title: 'Famous Micronations', content: '**Sealand** (North Sea platform), **Molossia** (Nevada, USA), **S.P.U.R.** (School People\'s Ukrainian Republic) — micronations with their own constitutions and symbols.' },
+        { title: 'Purposes', content: 'Art projects, political protest, educational initiatives, or a hobby. Some issue currencies, passports, and stamps.' }
+      ],
+      stats: { views: 12400, updated: '2026-03-12' },
+      keywords: ['micronation', 'sealand', 'molossia', 'sovereignty', 'hobby']
     }
-  },
-  {
-    id: 'microstates',
-    category: 'history',
-    translations: {
-      uk: {
-        title: 'Мікронації',
-        intro: '**Мікронація** — суб\'єкт, що проголошує себе незалежною державою, але не визнаний міжнародною спільнотою.',
-        image: '',
-        sections: [
-          { title: 'Приклади', content: 'Сіленд, Хут-Рівер, Молоссія, Ш.Н.У.Р. — популярні мікронації з власними символами та конституціями.' },
-          { title: 'Цілі', content: 'Мистецькі проєкти, політичний протест, освітні ініціативи або просто хобі.' }
-        ],
-        stats: { views: 12400, updated: '2026-03-12' },
-        keywords: ['мікронація', 'сіленд', 'державність', 'хобі']
-      },
-      en: {
-        title: 'Micronations',
-        intro: '**Micronation** — an entity claiming independence as a sovereign state but not recognized by the international community.',
-        image: '',
-        sections: [
-          { title: 'Examples', content: 'Sealand, Hutt River, Molossia, S.P.U.R. — popular micronations with their own symbols and constitutions.' },
-          { title: 'Purposes', content: 'Art projects, political protest, educational initiatives, or simply a hobby.' }
-        ],
-        stats: { views: 12400, updated: '2026-03-12' },
-        keywords: ['micronation', 'sealand', 'sovereignty', 'hobby']
-      }
+  }},
+  /* ─── 6 ─── */
+  { id: 'carpathians', category: 'science', translations: {
+    uk: {
+      title: 'Карпатські букові праліси',
+      intro: '**Карпатські букові праліси** — об\'єкт Світової спадщини ЮНЕСКО, що охоплює незаймані праліси України, Словаччини та Німеччини.',
+      sections: [
+        { title: 'Екологія', content: 'Унікальна екосистема з 300-річними буками, рідкісними видами птахів (чорний лелека, беркут) та ссавців (ведмідь, рись, вовк).' },
+        { title: 'Охорона', content: 'Внесено до списку ЮНЕСКО у 2007 р., розширено у 2011 та 2017 рр. Охоплює понад 78 000 га в 12 країнах.' }
+      ],
+      stats: { views: 9800, updated: '2026-03-14' },
+      keywords: ['карпати', 'ліс', 'юнеско', 'природа', 'бук']
+    },
+    en: {
+      title: 'Carpathian Primeval Beech Forests',
+      intro: '**The Carpathian Primeval Beech Forests** are a UNESCO World Heritage Site covering old-growth beech forests across Ukraine, Slovakia, and Germany.',
+      sections: [
+        { title: 'Ecology', content: 'A unique ecosystem with 300-year-old beeches, rare bird species (black stork, golden eagle) and mammals (bear, lynx, wolf).' },
+        { title: 'Protection', content: 'Inscribed on the UNESCO list in 2007, expanded in 2011 and 2017. Covers over 78,000 ha across 12 countries.' }
+      ],
+      stats: { views: 9800, updated: '2026-03-14' },
+      keywords: ['carpathians', 'forest', 'unesco', 'nature', 'beech']
     }
-  },
-  {
-    id: 'carpathians',
-    category: 'science',
-    translations: {
-      uk: {
-        title: 'Карпатські букові ліси',
-        intro: '**Карпатські букові ліси** — об\'єкт Світової спадщини ЮНЕСКО, що охоплює незаймані праліси України, Словаччини та Німеччини.',
-        image: '',
-        sections: [
-          { title: 'Екологія', content: 'Унікальна екосистема з 300-річними буками, рідкісними видами птахів та ссавців.' },
-          { title: 'Охорона', content: 'Внесено до списку ЮНЕСКО у 2007 році, розширено у 2011 та 2017.' }
-        ],
-        stats: { views: 9800, updated: '2026-03-14' },
-        keywords: ['карпати', 'ліс', 'юнеско', 'екологія']
-      },
-      en: {
-        title: 'Carpathian Beech Forests',
-        intro: '**Carpathian Beech Forests** — a UNESCO World Heritage site covering primeval beech forests in Ukraine, Slovakia, and Germany.',
-        image: '',
-        sections: [
-          { title: 'Ecology', content: 'Unique ecosystem with 300-year-old beech trees, rare bird and mammal species.' },
-          { title: 'Protection', content: 'Added to UNESCO list in 2007, expanded in 2011 and 2017.' }
-        ],
-        stats: { views: 9800, updated: '2026-03-14' },
-        keywords: ['carpathians', 'forest', 'unesco', 'ecology']
-      }
+  }},
+  /* ─── 7 ─── */
+  { id: 'gemini', category: 'tech', translations: {
+    uk: {
+      title: 'Google Gemini',
+      intro: '**Google Gemini** — серія мультимодальних генеративних моделей від Google DeepMind, здатних працювати з текстом, зображеннями, аудіо та кодом.',
+      sections: [
+        { title: 'Версії', content: 'Gemini Ultra, Pro та Nano — три рівні потужності. Gemini 2.0 (2025) запровадив нативне використання інструментів та агентні можливості.' }
+      ],
+      stats: { views: 85050, updated: '2026-03-18' },
+      keywords: ['gemini', 'google', 'ai', 'мультимодальний', 'llm']
+    },
+    en: {
+      title: 'Google Gemini',
+      intro: '**Google Gemini** is a series of multimodal generative AI models by Google DeepMind, capable of working with text, images, audio, and code.',
+      sections: [
+        { title: 'Versions', content: 'Gemini Ultra, Pro and Nano represent three power tiers. Gemini 2.0 (2025) introduced native tool use and agentic capabilities.' }
+      ],
+      stats: { views: 85050, updated: '2026-03-18' },
+      keywords: ['gemini', 'google', 'ai', 'multimodal', 'llm']
     }
-  }
+  }},
+  /* ─── 8 — NEW by Claude v3 ─── */
+  { id: 'spur', category: 'history', translations: {
+    uk: {
+      title: 'Шкільна Народна Українська Республіка (ШНУР)',
+      intro: '**ШНУР** (Шкільна Народна Українська Республіка) — українська шкільна мікронація, що функціонує як учнівська самоврядна одиниця з власною конституцією, законодавством та символікою.',
+      infobox: { 'Тип': 'Шкільна мікронація', 'Мова': 'Українська', 'Заснована': '2022', 'Конституція': 'Прийнята', 'Офіційний сайт': 'spurofficial.netlify.app' },
+      sections: [
+        { title: 'Устрій', content: 'ШНУР має трирівневу структуру влади: виконавчу (Президент та Кабінет), законодавчу (Верховна Рада) та судову гілки. Усі посадовці обираються шляхом виборів.' },
+        { title: 'Законодавство', content: 'Республіка має власний архів законодавчих актів, що регулюють внутрішні питання учнівського самоврядування та міжнародні відносини з іншими мікронаціями.' },
+        { title: 'Міжнародні відносини', content: 'ШНУР підтримує дипломатичні зв\'язки з низкою інших мікронацій, зокрема Молоссією та Королівством Теллурія.' }
+      ],
+      stats: { views: 5420, updated: '2026-03-18' },
+      keywords: ['шнур', 'мікронація', 'учнівське самоврядування', 'республіка', 'конституція']
+    },
+    en: {
+      title: 'School People\'s Ukrainian Republic (SPUR)',
+      intro: '**SPUR** (School People\'s Ukrainian Republic / ШНУР) is a Ukrainian school micronation operating as a student self-governing entity with its own constitution, legislation, and symbols.',
+      infobox: { 'Type': 'School micronation', 'Language': 'Ukrainian', 'Founded': '2022', 'Constitution': 'Adopted', 'Website': 'spurofficial.netlify.app' },
+      sections: [
+        { title: 'Government', content: 'SPUR has a three-branch government: executive (President and Cabinet), legislative (Supreme Council), and judicial. All officials are elected.' },
+        { title: 'Legislation', content: 'The republic maintains its own legislative archive, regulating internal student governance and international relations with other micronations.' },
+        { title: 'International Relations', content: 'SPUR maintains diplomatic ties with several micronations, including Molossia and the Kingdom of Telluria.' }
+      ],
+      stats: { views: 5420, updated: '2026-03-18' },
+      keywords: ['spur', 'micronation', 'student government', 'republic', 'constitution']
+    }
+  }},
+  /* ─── 9 — NEW by Claude v3 ─── */
+  { id: 'paris_commune', category: 'history', translations: {
+    uk: {
+      title: 'Паризька комуна',
+      intro: '**Паризька комуна** (18 березня — 28 травня 1871 р.) — революційний уряд, що управляв Парижем під час Франко-прусської війни.',
+      sections: [
+        { title: 'Виникнення', content: 'Проголошена 18 березня 1871 р. після краху Французької імперії та підписання принизливого перемир\'я з Пруссією. Члени комуни — «комунари» — обрали Раду з 92 осіб.' },
+        { title: 'Реформи', content: 'За 72 дні свого існування комуна запровадила відокремлення церкви від держави, безплатну освіту, самоуправління на підприємствах, скасування смертної кари.' },
+        { title: 'Придушення', content: 'У «Кривавому тижні» (21–28 травня 1871 р.) версальські війська придушили комуну. Загинуло від 10 000 до 20 000 комунарів.' }
+      ],
+      stats: { views: 21000, updated: '2026-03-18' },
+      keywords: ['паризька комуна', 'франція', 'революція', '1871']
+    },
+    en: {
+      title: 'Paris Commune',
+      intro: '**The Paris Commune** (18 March – 28 May 1871) was a revolutionary government that ruled Paris during the Franco-Prussian War.',
+      sections: [
+        { title: 'Origins', content: 'Proclaimed on 18 March 1871 following the collapse of the French Empire and the humiliating armistice with Prussia. The Council comprised 92 elected members.' },
+        { title: 'Reforms', content: 'In 72 days, the Commune enacted separation of church and state, free education, worker self-management of enterprises, and abolition of the death penalty.' },
+        { title: 'Suppression', content: 'During the "Bloody Week" (21–28 May 1871), Versailles troops crushed the Commune. Between 10,000 and 20,000 Communards were killed.' }
+      ],
+      stats: { views: 21000, updated: '2026-03-18' },
+      keywords: ['paris commune', 'france', 'revolution', '1871']
+    }
+  }},
+  /* ─── 10 — NEW by Claude v3 ─── */
+  { id: 'leonov', category: 'science', translations: {
+    uk: {
+      title: 'Олексій Леонов',
+      intro: '**Олексій Архипович Леонов** (1934–2019) — радянський космонавт, що 18 березня 1965 р. здійснив перший у світі вихід людини у відкритий космос.',
+      infobox: { 'Народився': '30 травня 1934', 'Помер': '11 жовтня 2019', 'Місія': 'Восход 2', 'Вихід у космос': '18 берез. 1965', 'Тривалість': '12 хв 9 с' },
+      sections: [
+        { title: 'Вихід у відкритий космос', content: 'Під час місії «Восход-2» Леонов провів поза кораблем 12 хвилин 9 секунд. Скафандр роздувся до такої міри, що він ледве зміг повернутися через шлюз.' },
+        { title: 'Місія Союз–Аполлон (1975)', content: 'Командував радянським екіпажем у першій спільній радянсько-американській місії — символі «розрядки» в часи холодної війни.' }
+      ],
+      stats: { views: 16700, updated: '2026-03-18' },
+      keywords: ['леонов', 'космос', 'вихід', 'восход', 'СРСР']
+    },
+    en: {
+      title: 'Alexei Leonov',
+      intro: '**Alexei Arkhipovich Leonov** (1934–2019) was a Soviet cosmonaut who on 18 March 1965 performed the world\'s first spacewalk.',
+      infobox: { 'Born': '30 May 1934', 'Died': '11 October 2019', 'Mission': 'Voskhod 2', 'Spacewalk': '18 March 1965', 'Duration': '12 min 9 s' },
+      sections: [
+        { title: 'Spacewalk', content: 'During the Voskhod 2 mission, Leonov spent 12 minutes 9 seconds outside the spacecraft. His suit inflated so severely he could barely re-enter through the airlock.' },
+        { title: 'Apollo–Soyuz (1975)', content: 'Commanded the Soviet crew in the first joint Soviet–American mission — a symbol of Cold War détente.' }
+      ],
+      stats: { views: 16700, updated: '2026-03-18' },
+      keywords: ['leonov', 'space', 'spacewalk', 'voskhod', 'ussr']
+    }
+  }}
 ];
 
-/* ================= UI TRANSLATIONS ================= */
-const UI_TEXT = {
+/* ══════════════════════════════════════════════════
+   UI TRANSLATIONS
+══════════════════════════════════════════════════ */
+const UI = {
   uk: {
-    nav_home: 'Головна', nav_portals: 'Портали', nav_recent: 'Останні зміни', nav_random: 'Випадкова',
-    left_nav_title: 'Навігація', link_home: 'Головна сторінка', link_request: 'Запит на статтю',
-    link_recent: 'Останні зміни', link_profile: 'Мій профіль', nav_categories: 'Розділи',
-    cat_history: 'Історія', cat_science: 'Наука', cat_tech: 'Технології', cat_culture: 'Культура',
-    nav_tools: 'Інструменти', tool_theme: 'Тема: Тьмяна/Світла', tool_clear: 'Очистити localStorage',
-    search_all: 'Всі категорії', btn_search: 'Знайти', featured_label: 'Стаття дня',
-    btn_read: 'Читати', btn_request: 'Запит', all_articles: 'Усі статті',
-    btn_back: 'Назад', edit_title_lbl: 'Заголовок', edit_intro_lbl: 'Вступ (Markdown)',
-    edit_image_lbl: 'URL зображення', btn_save: 'Зберегти', btn_cancel: 'Скасувати',
-    btn_add_sec: 'Секція', tab_article: 'Стаття', tab_talk: 'Обговорення', tab_history: 'Історія',
-    btn_comment_send: 'Відправити', comment_note: 'Локально', req_title_ui: '📩 Запит на статтю',
-    req_name_lbl: 'Назва', req_desc_lbl: 'Опис', btn_send: 'Надіслати', btn_cancel_req: 'Скасувати',
-    recent_title: 'Останні зміни', profile_title: 'Мій профіль', profile_nick_lbl: 'Нік:',
-    profile_edits_lbl: 'Правок:', profile_comments_lbl: 'Коментарів:', btn_change_nick: 'Змінити нік',
-    btn_logout: 'Вийти', right_new_title: 'Нові статті', right_stats_title: 'Статистика',
-    right_actions: 'Швидкі дії', btn_random: 'Випадкова', btn_recent: 'Останні зміни',
-    footer_text: 'Текст доступний за ліцензією Creative Commons Attribution-ShareAlike 4.0. · Арканум — демонстраційний проект.',
-    modal_title: '👤 Вхід', modal_cancel: 'Скасувати', modal_save: 'Зберегти',
-    alert_saved: '✅ Статтю збережено!', alert_not_found: '❌ Нічого не знайдено',
-    alert_request_sent: '✅ Запит відправлено!', alert_login: '🔐 Введіть нік',
-    alert_comment: '✍️ Напишіть коментар', alert_article_not_found: '❌ Статтю не знайдено',
-    meta_updated: 'Оновлено', meta_views: 'переглядів', no_comments: 'Коментарів немає — будь першим.',
-    no_history: 'Історія порожня.', no_recent: 'Немає останніх змін.',
-    search_placeholder: '🔍 Пошук статей...', btn_create_text: 'Створити'
+    featured_label:'Стаття дня', btn_read:'Читати →', btn_request:'Запит',
+    all_articles:'Усі статті', btn_back:'Назад', btn_edit:'Редагувати',
+    btn_share_text:'Поділитися', tab_article:'Стаття', tab_talk:'Обговорення',
+    tab_history:'Історія', btn_comment:'Відправити', comment_note:'не синхронізується',
+    req_heading:'📩 Запит на статтю', lbl_req_title:'Назва статті',
+    lbl_req_desc:'Опис / причина', btn_send:'Надіслати', btn_cancel_req:'Скасувати',
+    recent_heading:'Останні зміни', no_recent:'Немає змін.',
+    profile_heading:'Мій профіль', lbl_nick:'Нік:', lbl_edits:'Правок:',
+    lbl_comments:'Коментарів:', btn_change_nick:'Змінити нік', btn_logout:'Вийти',
+    rp_new:'Нові статті', rp_stats:'Статистика', rp_actions:'Швидкі дії',
+    btn_random:'🎲 Випадкова стаття', btn_recent_rp:'🕒 Останні зміни',
+    sb_navigation:'Навігація', sb_home:'Головна сторінка', sb_request:'Запит на статтю',
+    sb_recent:'Останні зміни', sb_profile:'Мій профіль', sb_categories:'Розділи',
+    sb_history:'Історія', sb_science:'Наука', sb_tech:'Технології', sb_culture:'Культура',
+    sb_tools:'Інструменти', sb_theme:'Темна / Світла тема', sb_clear:'Очистити сховище',
+    topnav_home:'Головна', topnav_portals:'Портали', topnav_recent:'Останні зміни',
+    topnav_random:'Випадкова', topnav_request:'Запит',
+    modal_title:'👤 Вхід', modal_cancel:'Скасувати', modal_save:'Зберегти',
+    bc_home:'Головна',
+    lbl_title:'Заголовок', lbl_intro:'Вступ (Markdown)', lbl_image:'URL зображення',
+    btn_save:'Зберегти', btn_add_sec:'+ Секція', btn_cancel:'Скасувати',
+    meta_updated:'Оновлено', meta_views:'переглядів',
+    no_comments:'Коментарів немає. Будьте першим!',
+    no_history:'Історія порожня.',
+    share_toast:'🔗 Посилання скопійовано!',
+    src_all:'Всі категорії', src_history:'Історія', src_science:'Наука',
+    src_tech:'Технології', src_culture:'Культура',
+    btn_search:'Знайти',btn_create_text:'Створити'
   },
   en: {
-    nav_home: 'Home', nav_portals: 'Portals', nav_recent: 'Recent Changes', nav_random: 'Random',
-    left_nav_title: 'Navigation', link_home: 'Main Page', link_request: 'Request Article',
-    link_recent: 'Recent Changes', link_profile: 'My Profile', nav_categories: 'Categories',
-    cat_history: 'History', cat_science: 'Science', cat_tech: 'Technology', cat_culture: 'Culture',
-    nav_tools: 'Tools', tool_theme: 'Theme: Dark/Light', tool_clear: 'Clear localStorage',
-    search_all: 'All categories', btn_search: 'Search', featured_label: 'Featured Article',
-    btn_read: 'Read', btn_request: 'Request', all_articles: 'All Articles',
-    btn_back: 'Back', edit_title_lbl: 'Title', edit_intro_lbl: 'Intro (Markdown)',
-    edit_image_lbl: 'Image URL', btn_save: 'Save', btn_cancel: 'Cancel',
-    btn_add_sec: 'Section', tab_article: 'Article', tab_talk: 'Talk', tab_history: 'History',
-    btn_comment_send: 'Send', comment_note: 'Local', req_title_ui: '📩 Request an Article',
-    req_name_lbl: 'Title', req_desc_lbl: 'Description', btn_send: 'Submit', btn_cancel_req: 'Cancel',
-    recent_title: 'Recent Changes', profile_title: 'My Profile', profile_nick_lbl: 'Nickname:',
-    profile_edits_lbl: 'Edits:', profile_comments_lbl: 'Comments:', btn_change_nick: 'Change Nick',
-    btn_logout: 'Logout', right_new_title: 'New Articles', right_stats_title: 'Statistics',
-    right_actions: 'Quick Actions', btn_random: 'Random', btn_recent: 'Recent Changes',
-    footer_text: 'Text available under Creative Commons Attribution-ShareAlike 4.0. · Arkhanum — demo project.',
-    modal_title: '👤 Sign In', modal_cancel: 'Cancel', modal_save: 'Save',
-    alert_saved: '✅ Article saved!', alert_not_found: '❌ Nothing found',
-    alert_request_sent: '✅ Request sent!', alert_login: '🔐 Enter nickname',
-    alert_comment: '✍️ Write a comment', alert_article_not_found: '❌ Article not found',
-    meta_updated: 'Updated', meta_views: 'views', no_comments: 'No comments yet — be the first.',
-    no_history: 'History is empty.', no_recent: 'No recent changes.',
-    search_placeholder: '🔍 Search articles...', btn_create_text: 'Create'
+    featured_label:'Featured Article', btn_read:'Read →', btn_request:'Request',
+    all_articles:'All Articles', btn_back:'Back', btn_edit:'Edit',
+    btn_share_text:'Share', tab_article:'Article', tab_talk:'Talk',
+    tab_history:'History', btn_comment:'Send', comment_note:'not synced',
+    req_heading:'📩 Request an Article', lbl_req_title:'Article Title',
+    lbl_req_desc:'Description / reason', btn_send:'Submit', btn_cancel_req:'Cancel',
+    recent_heading:'Recent Changes', no_recent:'No recent changes.',
+    profile_heading:'My Profile', lbl_nick:'Nickname:', lbl_edits:'Edits:',
+    lbl_comments:'Comments:', btn_change_nick:'Change Nick', btn_logout:'Log out',
+    rp_new:'New Articles', rp_stats:'Statistics', rp_actions:'Quick Actions',
+    btn_random:'🎲 Random Article', btn_recent_rp:'🕒 Recent Changes',
+    sb_navigation:'Navigation', sb_home:'Main Page', sb_request:'Request Article',
+    sb_recent:'Recent Changes', sb_profile:'My Profile', sb_categories:'Categories',
+    sb_history:'History', sb_science:'Science', sb_tech:'Technology', sb_culture:'Culture',
+    sb_tools:'Tools', sb_theme:'Dark / Light Theme', sb_clear:'Clear Storage',
+    topnav_home:'Home', topnav_portals:'Portals', topnav_recent:'Recent Changes',
+    topnav_random:'Random', topnav_request:'Request',
+    modal_title:'👤 Sign In', modal_cancel:'Cancel', modal_save:'Save',
+    bc_home:'Home',
+    lbl_title:'Title', lbl_intro:'Intro (Markdown)', lbl_image:'Image URL',
+    btn_save:'Save', btn_add_sec:'+ Section', btn_cancel:'Cancel',
+    meta_updated:'Updated', meta_views:'views',
+    no_comments:'No comments yet. Be the first!',
+    no_history:'History is empty.',
+    share_toast:'🔗 Link copied!',
+    src_all:'All categories', src_history:'History', src_science:'Science',
+    src_tech:'Technology', src_culture:'Culture',
+    btn_search:'Search',btn_create_text:'Create'
   }
 };
 
-/* ================= HELPERS ================= */
-function loadJSON(key, fallback) {
-  try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; }
-  catch(e) { return fallback; }
-}
-function saveJSON(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
-function formatDateISO(d) {
-  if(!d) return '';
-  const dd = new Date(d);
-  return dd.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-}
-function slugToFilename(slug) { return slug.replace(/\s+/g, '_').toLowerCase(); }
-function escapeHtml(str) { return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+/* ══════════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════════ */
+const ld  = (k,fb) => { try { const r=localStorage.getItem(k); return r?JSON.parse(r):fb; } catch(e){return fb;} };
+const sv  = (k,d)  => { try { localStorage.setItem(k,JSON.stringify(d)); } catch(e){} };
+const fmt = d  => { if(!d) return ''; return new Date(d).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}); };
+const esc = s  => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const $   = id => document.getElementById(id);
+const cat_labels = { history:{uk:'Історія',en:'History'}, science:{uk:'Наука',en:'Science'}, tech:{uk:'Технології',en:'Technology'}, culture:{uk:'Культура',en:'Culture'} };
 
-/* ================= APP ================= */
-const app = {
+/* ══════════════════════════════════════════════════
+   MAIN APP OBJECT
+══════════════════════════════════════════════════ */
+const _app = {
   lang: 'uk',
   articles: [],
   comments: {},
   history: {},
   edits: {},
   user: null,
-  featuredId: 'antikythera',
-  currentArticleId: null,
   darkMode: false,
+  currentId: null,
+  featuredId: 'antikythera',
+  _navigating: false,
 
-/* ================= ROUTING SYSTEM ================= */
-// Додай це в об'єкт app перед init()
-
-router: {
-  routes: {
-    home: '/',
-    article: '/article/:id',
-    recent: '/recent',
-    profile: '/profile',
-    request: '/request'
-  },
-  
-  // Parse hash URL like #/article/kharkiv
-  parse() {
-    const hash = window.location.hash.replace('#', '') || '/';
-    const parts = hash.split('/').filter(p => p);
-    
-    if (parts.length === 0) return { name: 'home', params: {} };
-    if (parts[0] === 'article' && parts[1]) return { name: 'article', params: { id: parts[1] } };
-    if (parts[0] === 'recent') return { name: 'recent', params: {} };
-    if (parts[0] === 'profile') return { name: 'profile', params: {} };
-    if (parts[0] === 'request') return { name: 'request', params: {} };
-    
-    return { name: 'home', params: {} };
-  },
-  
-  // Navigate to route
-  go(name, params = {}) {
-    let hash = this.routes[name];
-    for (const [key, val] of Object.entries(params)) {
-      hash = hash.replace(`:${key}`, val);
-    }
-    window.location.hash = hash;
-  },
-  
-  // Handle route change
-  handle() {
-    const route = this.parse();
-    if (route.name === 'article' && route.params.id) {
-      app.loadArticle(route.params.id);
-    } else if (route.name === 'recent') {
-      app.showRecent();
-    } else if (route.name === 'profile') {
-      app.openProfile();
-    } else if (route.name === 'request') {
-      app.openRequest();
-    } else {
-      app.renderHome();
-    }
-  }
-},
-
-// Оновлений init():
-init() {
-  // ...existing load code...
-  
-  // Listen for hash changes
-  window.addEventListener('hashchange', () => this.router.handle());
-  
-  // Handle initial route
-  this.router.handle();
-  
-  this.updateRightPanel();
-  this.updateChangeBadge();
-},
-
-// Оновлені навігаційні функції:
-showHome() { 
-  this.router.go('home'); 
-},
-showRecent() { 
-  this.router.go('recent'); 
-},
-openProfile() { 
-  this.router.go('profile'); 
-},
-openRequest() { 
-  this.router.go('request'); 
-},
-loadArticle(id) {
-  // ...existing article loading code...
-  this.router.go('article', { id }); // Update URL after loading
-},
-
+  /* ─── INIT (single, fixed) ─── */
   init() {
-    this.articles = loadJSON(STORAGE_KEYS.ARTICLES, BASE_ARTICLES);
-    this.comments = loadJSON(STORAGE_KEYS.COMMENTS, {});
-    this.history = loadJSON(STORAGE_KEYS.HISTORY, {});
-    this.edits = loadJSON(STORAGE_KEYS.EDITS, {});
-    this.user = localStorage.getItem(STORAGE_KEYS.USER) || null;
-    this.darkMode = localStorage.getItem(STORAGE_KEYS.DARK) === 'true';
-    
-    if(this.user) document.getElementById('ui_username').textContent = this.user;
-    if(this.darkMode) document.body.classList.add('dark');
-    
-    this.renderHome();
-    this.updateRightPanel();
-    this.updateChangeBadge();
+    this.articles = ld(SK.ARTICLES, BASE_ARTICLES);
+    this.comments = ld(SK.COMMENTS, {});
+    this.history  = ld(SK.HISTORY,  {});
+    this.edits    = ld(SK.EDITS,    {});
+    this.user     = localStorage.getItem(SK.USER) || null;
+    this.darkMode = localStorage.getItem(SK.DARK) === 'true';
+
+    if (this.darkMode) document.body.classList.add('dark');
+    if (this.user) $('ui_username').textContent = this.user;
+
+    // Hash router
+    window.addEventListener('hashchange', () => { if (!this._navigating) this._handleRoute(); });
+    this._handleRoute();
+
+    this._updateRightPanel();
+    this._updateBadge();
+
+    // Close modal on overlay click
+    $('modal_login').addEventListener('click', e => { if (e.target === e.currentTarget) this.closeLogin(); });
   },
 
-  saveAll() {
-    saveJSON(STORAGE_KEYS.ARTICLES, this.articles);
-    saveJSON(STORAGE_KEYS.COMMENTS, this.comments);
-    saveJSON(STORAGE_KEYS.HISTORY, this.history);
-    saveJSON(STORAGE_KEYS.EDITS, this.edits);
-    if(this.user) localStorage.setItem(STORAGE_KEYS.USER, this.user);
-    saveJSON(STORAGE_KEYS.DARK, this.darkMode);
+  /* ─── ROUTER ─── */
+  _navigate(hash) {
+    this._navigating = true;
+    window.location.hash = hash;
+    requestAnimationFrame(() => { this._navigating = false; });
   },
 
-  /* ===== TRANSLATIONS ===== */
-  t(key) {
-    return (UI_TEXT[this.lang] && UI_TEXT[this.lang][key]) 
-      ? UI_TEXT[this.lang][key] 
-      : (UI_TEXT.uk[key] || key);
+  _handleRoute() {
+    const h = window.location.hash.replace('#','') || '/';
+    const parts = h.split('/').filter(Boolean);
+    if (parts[0] === 'article' && parts[1]) {
+      this._renderArticle(parts[1]);
+    } else if (parts[0] === 'recent') {
+      this._renderRecent();
+    } else if (parts[0] === 'profile') {
+      this._renderProfile();
+    } else if (parts[0] === 'request') {
+      this._renderRequest();
+    } else {
+      this._renderHome();
+    }
+  },
+
+  /* ─── TRANSLATIONS ─── */
+  t(k) { return (UI[this.lang]?.[k]) ?? (UI.uk[k]) ?? k; },
+
+  tr(article) {
+    if (!article) return { title:'', intro:'', sections:[], stats:{}, keywords:[], infobox:null };
+    return article.translations?.[this.lang] ?? article.translations?.uk ?? Object.values(article.translations)[0] ?? {};
   },
 
   setLang(lang) {
     this.lang = lang;
-    document.getElementById('lang_uk').classList.toggle('active', lang === 'uk');
-    document.getElementById('lang_en').classList.toggle('active', lang === 'en');
+    $('lang_uk').classList.toggle('active', lang === 'uk');
+    $('lang_en').classList.toggle('active', lang === 'en');
     document.documentElement.lang = lang;
-    
-    // Update all UI text
-    document.querySelectorAll('[id]').forEach(el => {
-      const key = el.id;
-      if(UI_TEXT[this.lang] && UI_TEXT[this.lang][key] && !['articleList','right_new','article_content','comments_list','history_list','recent_list','sections_edit','featured_intro','featured_title'].includes(key)) {
-        if(el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-          el.placeholder = UI_TEXT[this.lang][key] || el.placeholder;
-        } else {
-          el.textContent = UI_TEXT[this.lang][key];
-        }
-      }
+    // Update all text nodes with IDs matching UI keys
+    Object.keys(UI[lang]).forEach(k => {
+      const el = $(k);
+      if (!el) return;
+      const skip = ['articleList','right_new','article_content','comments_list','history_list','recent_list','sections_edit','featured_intro','featured_title','shareToast'];
+      if (skip.includes(k)) return;
+      el.textContent = UI[lang][k];
     });
-    
     // Re-render current view
-    if(this.currentArticleId) this.loadArticle(this.currentArticleId);
-    else this.renderHome();
+    if (this.currentId) this._renderArticle(this.currentId);
+    else this._handleRoute();
   },
 
-  getTranslation(article) {
-    if(!article) return { title: '', intro: '', sections: [], image: '', stats: {}, keywords: [] };
-    const tr = article.translations?.[this.lang];
-    return tr || article.translations?.uk || Object.values(article.translations)[0] || {};
+  /* ─── SEO META UPDATE (Claude v3) ─── */
+  setPageMeta({ title, description, url }) {
+    document.title = title ? `${title} — Арканум` : 'Арканум — Вільна Енциклопедія';
+    const desc = description || 'Безкоштовна двомовна енциклопедія';
+    document.querySelector('meta[name="description"]')?.setAttribute('content', desc);
+    document.querySelector('meta[property="og:title"]')?.setAttribute('content', document.title);
+    document.querySelector('meta[property="og:description"]')?.setAttribute('content', desc);
+    document.querySelector('meta[property="og:url"]')?.setAttribute('content', url || location.href);
+    document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', document.title);
+    document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', desc);
+    if ($('canonical_url')) $('canonical_url').href = url || location.href;
   },
 
-  /* ===== NAVIGATION ===== */
-  showSection(id) {
+  /* ─── SHOW / HIDE SECTIONS ─── */
+  _showSection(id) {
     document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
-    const el = document.getElementById(id);
-    if(el) el.classList.remove('hidden');
+    const el = $(id);
+    if (el) el.classList.remove('hidden');
     this.cancelEdit();
+    // Breadcrumbs visibility
+    $('breadcrumbs').classList.toggle('visible', id === 'articleView');
   },
 
-  showHome() { this.renderHome(); },
-
-  showRecent() {
-    this.showSection('recentView');
-    const list = document.getElementById('recent_list');
-    list.innerHTML = '';
-    const all = [];
-    for(const aid in this.history) {
-      (this.history[aid]||[]).forEach(h => all.push({...h, id: aid}));
-    }
-    all.sort((a,b) => new Date(b.date) - new Date(a.date));
-    if(all.length === 0) list.innerHTML = `<p style="color:var(--muted)">${this.t('no_recent')}</p>`;
-    else list.innerHTML = all.map(h => {
-      const art = this.articles.find(x => x.id === h.id);
-      const title = art ? this.getTranslation(art).title : h.id;
-      return `<div style="padding:8px;border-bottom:1px dashed #eee"><b>${h.user||'Анонім'}</b> — ${h.action} (<i>${formatDateISO(h.date)}</i>) — <a href="#" onclick="app.loadArticle('${h.id}')">${escapeHtml(title)}</a></div>`;
-    }).join('');
+  /* ─── HOME ─── */
+  showHome() {
+    this._navigate('/');
+    this._renderHome();
   },
 
-  filterCategory(cat) {
-    const list = document.getElementById('articleList');
-    list.innerHTML = '';
-    this.articles.filter(a => a.category === cat).forEach(a => {
-      const tr = this.getTranslation(a);
-      const el = document.createElement('div'); el.className = 'card';
-      el.innerHTML = `<strong style="cursor:pointer" onclick="app.loadArticle('${a.id}')">${escapeHtml(tr.title)}</strong><div style="color:var(--muted)">${escapeHtml((tr.intro||'').slice(0,140))}${(tr.intro||'').length>140?'…':''}</div>`;
-      list.appendChild(el);
-    });
-  },
+  _renderHome() {
+    this.currentId = null;
+    this.setPageMeta({ title: null });
 
-  /* ===== HOME / LIST ===== */
-  renderHome() {
     const featured = this.articles.find(a => a.id === this.featuredId) || this.articles[0];
-    const fData = this.getTranslation(featured);
-    document.getElementById('featured_title').textContent = fData.title;
-    document.getElementById('featured_intro').textContent = (fData.intro || '').replace(/[\r\n]+/g, ' ').slice(0, 240) + ((fData.intro||'').length > 240 ? '…' : '');
-    
-    const container = document.getElementById('articleList');
-    container.innerHTML = '';
+    const fd = this.tr(featured);
+    $('featured_title').textContent = fd.title;
+    $('featured_intro').textContent = (fd.intro || '').replace(/\*\*/g,'').slice(0, 220) + ((fd.intro||'').length > 220 ? '…' : '');
+    // Update featured label
+    $('featured_label').textContent = this.t('featured_label');
+    $('btn_read').textContent = this.t('btn_read');
+
+    const list = $('articleList');
+    list.innerHTML = '';
     this.articles.forEach(a => {
-      const tr = this.getTranslation(a);
-      const el = document.createElement('div');
-      el.className = 'card';
-      el.innerHTML = `<strong style="font-size:1.05rem;cursor:pointer" onclick="app.loadArticle('${a.id}')">${escapeHtml(tr.title)}</strong>
-                      <div style="color:var(--muted);font-size:.9rem;margin-top:6px">${escapeHtml((tr.intro||'').slice(0,160))}${(tr.intro||'').length>160?'…':''}</div>
-                      <div style="margin-top:8px"><small style="color:var(--muted)">${a.category || 'misc'}</small></div>`;
-      container.appendChild(el);
+      const tr = this.tr(a);
+      const div = document.createElement('div');
+      div.className = 'card art-card';
+      div.onclick = () => this.loadArticle(a.id);
+      const catLabel = cat_labels[a.category]?.[this.lang] || a.category;
+      div.innerHTML = `<div class="art-title">${esc(tr.title)}</div>
+        <div class="art-excerpt">${esc((tr.intro||'').replace(/\*\*/g,'').slice(0,160))}${(tr.intro||'').length>160?'…':''}</div>
+        <div class="art-meta"><span class="cat-tag">${esc(catLabel)}</span> · ${fmt(tr.stats?.updated)} · 👁 ${(tr.stats?.views||0).toLocaleString('uk-UA')}</div>`;
+      list.appendChild(div);
     });
-    
-    const rightNew = document.getElementById('right_new');
+
+    const rightNew = $('right_new');
     rightNew.innerHTML = '';
-    this.articles.slice(0,5).forEach(a => {
+    this.articles.slice(0,6).forEach(a => {
       const li = document.createElement('li');
-      li.innerHTML = `<a href="#" onclick="app.loadArticle('${a.id}')">${escapeHtml(this.getTranslation(a).title)}</a>`;
+      li.innerHTML = `<a href="#" onclick="app.loadArticle('${a.id}');return false;">${esc(this.tr(a).title)}</a>`;
       rightNew.appendChild(li);
     });
-    
-    this.showSection('homeView');
+
+    this._showSection('homeView');
+    this._updateBadge();
   },
 
-  updateRightPanel() {
-    document.getElementById('right_stats').textContent = `${this.t('right_stats_title')}: ${this.articles.length} статей · localStorage`;
-    this.updateProfileUI();
-  },
-
-  updateChangeBadge() {
-    const changesCount = Object.values(this.history).reduce((s,arr) => s + (arr ? arr.length : 0), 0);
-    document.getElementById('badge_changes').textContent = changesCount;
-  },
-
-  /* ===== ARTICLE ===== */
+  /* ─── ARTICLE ─── */
   loadArticle(id) {
-    const art = this.articles.find(a => a.id === id);
-    if(!art) { alert(this.t('alert_article_not_found')); return; }
-    
-    this.currentArticleId = id;
-    const tr = this.getTranslation(art);
-    
-    // Increment views
-    tr.stats = tr.stats || {};
-    tr.stats.views = (tr.stats.views || 0) + 1;
-    art.translations[this.lang] = tr;
-    this.saveAll();
-    
-    // Fill UI
-    document.getElementById('article_title').textContent = tr.title;
-    document.getElementById('meta_date').textContent = tr.stats.updated ? `${this.t('meta_updated')}: ${formatDateISO(tr.stats.updated)}` : '';
-    document.getElementById('meta_views').textContent = `${tr.stats.views || 0} ${this.t('meta_views')}`;
-    
-    // Categories
-    const cats = document.getElementById('article_cats');
-    cats.innerHTML = `<span style="background:var(--paper);padding:.2rem .45rem;border-radius:6px;font-family:monospace">${art.category || 'misc'}</span>`;
-    
-    // Infobox
-    const infobox = document.getElementById('article_infobox');
-    if(tr.image) {
-      infobox.style.display = 'block';
-      infobox.innerHTML = `<img src="${tr.image}" alt="" style="width:100%;border-radius:6px;margin-bottom:8px"><b>${tr.title}</b>`;
-    } else infobox.style.display = 'none';
-    
-    // Render content with Markdown
-    const content = document.getElementById('article_content');
-    let mdHtml = '';
-    if(tr.intro) mdHtml += marked.parse(tr.intro);
-    (tr.sections || []).forEach((s, i) => {
-      mdHtml += `<h2 id="sec-${i}">${escapeHtml(s.title)}</h2>${marked.parse(s.content)}`;
-    });
-    content.innerHTML = mdHtml;
-    
-    // TOC
-    const toc = document.getElementById('article_toc');
-    if(tr.sections?.length) {
-      toc.style.display = 'block';
-      toc.innerHTML = '<strong>📑 Зміст</strong><ol style="padding-left:14px;margin:8px 0">' + 
-        tr.sections.map((s,i) => `<li><a href="#sec-${i}" onclick="document.getElementById('sec-${i}').scrollIntoView({behavior:'smooth'})">${escapeHtml(s.title)}</a></li>`).join('') + '</ol>';
-    } else { toc.style.display = 'none'; toc.innerHTML = ''; }
-    
-    this.cancelEdit();
-    this.renderComments();
-    this.renderHistory();
-    this.showSection('articleView');
+    this._navigate(`/article/${id}`);
+    this._renderArticle(id);
   },
 
+  _renderArticle(id) {
+    const art = this.articles.find(a => a.id === id);
+    if (!art) { this._renderHome(); return; }
+
+    this.currentId = id;
+    const tr = this.tr(art);
+
+    // Increment views
+    if (!art.translations[this.lang]) art.translations[this.lang] = { ...tr };
+    art.translations[this.lang].stats = art.translations[this.lang].stats || {};
+    art.translations[this.lang].stats.views = (art.translations[this.lang].stats.views || tr.stats?.views || 0) + 1;
+    this._saveAll();
+
+    // SEO
+    this.setPageMeta({
+      title: tr.title,
+      description: (tr.intro || '').replace(/\*\*/g,'').slice(0,160),
+      url: `https://arkhanum.vercel.app/article/${id}`
+    });
+
+    // Breadcrumbs — Claude v3
+    const catLabel = cat_labels[art.category]?.[this.lang] || art.category;
+    $('breadcrumbs_list').innerHTML =
+      `<li><a href="#" onclick="app.showHome();return false;">${this.t('bc_home')}</a></li>
+       <li><a href="#" onclick="app.filterCategory('${art.category}');return false;">${esc(catLabel)}</a></li>
+       <li>${esc(tr.title)}</li>`;
+
+    // Header info
+    $('article_title').textContent = tr.title;
+    $('article_sub').textContent = tr.subtitle || '';
+    $('meta_updated').textContent = tr.stats?.updated ? `${this.t('meta_updated')}: ${fmt(tr.stats.updated)}` : '';
+    $('meta_views_2').textContent = `👁 ${(tr.stats?.views||0).toLocaleString('uk-UA')} ${this.t('meta_views')}`;
+    $('meta_length').textContent = `📝 ${((tr.intro||'') + (tr.sections||[]).map(s=>s.content).join('')).length} б`;
+
+    // Categories
+    const catTag = art.category ? `<span class="cat-tag">${esc(catLabel)}</span>` : '';
+    $('article_cats').innerHTML = catTag;
+
+    // Infobox
+    const ib = $('article_infobox');
+    if (tr.infobox && Object.keys(tr.infobox).length) {
+      const rows = Object.entries(tr.infobox).map(([k,v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('');
+      ib.innerHTML = `<div class="infobox-title">${esc(tr.title)}</div><table>${rows}</table>`;
+      ib.style.display = 'block';
+    } else {
+      ib.style.display = 'none';
+    }
+
+    // TOC
+    const toc = $('article_toc');
+    if (tr.sections?.length >= 2) {
+      toc.innerHTML = `<div class="toc-title">📑 ${this.lang==='uk'?'Зміст':'Contents'}</div>
+        <ol>${tr.sections.map((s,i)=>`<li><a href="#sec_${id}_${i}" onclick="setTimeout(()=>document.getElementById('sec_${id}_${i}').scrollIntoView({behavior:'smooth'}),10)">${esc(s.title)}</a></li>`).join('')}</ol>`;
+      toc.style.display = 'block';
+    } else {
+      toc.style.display = 'none';
+      toc.innerHTML = '';
+    }
+
+    // Content
+    let html = '';
+    if (tr.intro) html += marked.parse(tr.intro);
+    (tr.sections||[]).forEach((s,i) => {
+      html += `<h2 id="sec_${id}_${i}">${esc(s.title)}</h2>${marked.parse(s.content||'')}`;
+    });
+    $('article_content').innerHTML = html;
+    $('tab_content_panel').innerHTML = '';
+
+    this.cancelEdit();
+    this._renderComments();
+    this._renderHistory();
+    this._showSection('articleView');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  },
+
+  /* ─── SHARE (Claude v3) ─── */
+  shareArticle() {
+    const url = `${location.origin}${location.pathname}#/article/${this.currentId}`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(() => this._showToast(this.t('share_toast')));
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); this._showToast(this.t('share_toast')); } catch(e){}
+      document.body.removeChild(ta);
+    }
+  },
+
+  _showToast(msg) {
+    const t = $('shareToast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  },
+
+  /* ─── EDIT ─── */
   enableEdit() {
-    if(!this.user) { this.openLogin(); return; }
-    const art = this.articles.find(a => a.id === this.currentArticleId);
-    if(!art) return;
-    const tr = this.getTranslation(art);
-    
-    document.getElementById('edit_title').value = tr.title || '';
-    document.getElementById('edit_intro').value = tr.intro || '';
-    document.getElementById('edit_image').value = tr.image || '';
-    
-    const sectionsEdit = document.getElementById('sections_edit');
-    sectionsEdit.innerHTML = '';
-    (tr.sections || []).forEach((s, idx) => {
-      sectionsEdit.insertAdjacentHTML('beforeend', `<div class="section-block" data-idx="${idx}">
-        <input class="s_title" placeholder="Назва секції" value="${escapeHtml(s.title)}" />
-        <textarea class="s_content" rows="4">${escapeHtml(s.content)}</textarea>
-        <div style="text-align:right"><button class="btn" onclick="app.removeSection(this)">Видалити</button></div>
+    if (!this.user) { this.openLogin(); return; }
+    const art = this.articles.find(a => a.id === this.currentId);
+    if (!art) return;
+    const tr = this.tr(art);
+    $('edit_title').value = tr.title || '';
+    $('edit_intro').value = tr.intro || '';
+    $('edit_image').value = tr.image || '';
+    const se = $('sections_edit');
+    se.innerHTML = '';
+    (tr.sections||[]).forEach((s,i) => {
+      se.insertAdjacentHTML('beforeend', `<div class="section-block" data-idx="${i}">
+        <input class="s_title" placeholder="${this.lang==='uk'?'Назва секції':'Section title'}" value="${esc(s.title)}"/>
+        <textarea class="s_content" rows="4">${esc(s.content)}</textarea>
+        <div style="text-align:right;margin-top:4px"><button class="btn-sm" onclick="this.closest('.section-block').remove()">✖ ${this.lang==='uk'?'Видалити':'Remove'}</button></div>
       </div>`);
     });
-    
-    document.getElementById('editArea').classList.remove('hidden');
-    document.getElementById('editArea').scrollIntoView({behavior: 'smooth'});
+    $('editArea').classList.remove('hidden');
+    $('editArea').scrollIntoView({ behavior: 'smooth' });
   },
 
   addSection() {
-    const sectionsEdit = document.getElementById('sections_edit');
-    sectionsEdit.insertAdjacentHTML('beforeend', `<div class="section-block">
-        <input class="s_title" placeholder="Назва секції" />
-        <textarea class="s_content" rows="4"></textarea>
-        <div style="text-align:right"><button class="btn" onclick="app.removeSection(this)">Видалити</button></div>
-      </div>`);
-  },
-
-  removeSection(btn) {
-    const block = btn.closest('.section-block');
-    if(block) block.remove();
+    $('sections_edit').insertAdjacentHTML('beforeend', `<div class="section-block">
+      <input class="s_title" placeholder="${this.lang==='uk'?'Назва секції':'Section title'}"/>
+      <textarea class="s_content" rows="4"></textarea>
+      <div style="text-align:right;margin-top:4px"><button class="btn-sm" onclick="this.closest('.section-block').remove()">✖</button></div>
+    </div>`);
   },
 
   saveEdit() {
-    const art = this.articles.find(a => a.id === this.currentArticleId);
-    if(!art) return;
-    const tr = this.getTranslation(art);
-    
-    const newTitle = document.getElementById('edit_title').value.trim();
-    const newIntro = document.getElementById('edit_intro').value.trim();
-    const newImage = document.getElementById('edit_image').value.trim();
-    
-    const secBlocks = Array.from(document.querySelectorAll('#sections_edit .section-block'));
-    const newSections = secBlocks.map(b => ({
-      title: b.querySelector('.s_title').value.trim() || 'Без назви',
+    const art = this.articles.find(a => a.id === this.currentId);
+    if (!art) return;
+    const tr = { ...this.tr(art) };
+    tr.title   = $('edit_title').value.trim() || tr.title;
+    tr.intro   = $('edit_intro').value.trim();
+    tr.image   = $('edit_image').value.trim();
+    tr.sections = Array.from(document.querySelectorAll('#sections_edit .section-block')).map(b => ({
+      title:   b.querySelector('.s_title').value.trim() || 'Untitled',
       content: b.querySelector('.s_content').value.trim()
     }));
-    
-    tr.title = newTitle || tr.title;
-    tr.intro = newIntro;
-    tr.image = newImage;
-    tr.sections = newSections;
-    tr.stats = tr.stats || {};
-    tr.stats.updated = (new Date()).toISOString();
-    
+    tr.stats = { ...tr.stats, updated: new Date().toISOString() };
     art.translations[this.lang] = tr;
-    
-    // History
-    if(!this.history[art.id]) this.history[art.id] = [];
-    this.history[art.id].push({
-      date: (new Date()).toISOString(),
-      user: this.user || 'Анонім',
-      action: `Редагування (${this.lang})`
-    });
-    
-    // Edits counter
-    if(this.user) this.edits[this.user] = (this.edits[this.user] || 0) + 1;
-    
-    this.saveAll();
-    this.updateChangeBadge();
-    this.updateProfileUI();
-    this.loadArticle(art.id);
-    alert(this.t('alert_saved'));
+    if (!this.history[art.id]) this.history[art.id] = [];
+    this.history[art.id].push({ date: new Date().toISOString(), user: this.user || 'Анонім', action: `Edit (${this.lang})` });
+    if (this.user) this.edits[this.user] = (this.edits[this.user]||0) + 1;
+    this._saveAll();
+    this._updateBadge();
+    this._renderArticle(art.id);
+    this._showToast(this.lang==='uk'?'✅ Збережено!':'✅ Saved!');
   },
 
-  cancelEdit() {
-    document.getElementById('editArea').classList.add('hidden');
+  cancelEdit() { $('editArea')?.classList.add('hidden'); },
+
+  /* ─── TABS ─── */
+  switchTab(evt, name) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    if (evt?.currentTarget) evt.currentTarget.classList.add('active');
+    else document.querySelector(`[data-tab="${name}"]`)?.classList.add('active');
+    $('tab_content_panel').classList.toggle('hidden', name !== 'content');
+    $('tab_talk_panel').classList.toggle('hidden', name !== 'talk');
+    $('tab_history_panel').classList.toggle('hidden', name !== 'history');
+    if (name === 'talk') this._renderComments();
+    if (name === 'history') this._renderHistory();
   },
 
-  /* ===== COMMENTS & HISTORY ===== */
-  renderComments() {
-    const container = document.getElementById('comments_list');
-    const id = this.currentArticleId;
-    const list = (this.comments[id] && this.comments[id][this.lang]) ? this.comments[id][this.lang] : [];
-    document.getElementById('talk_count').textContent = `(${list.length})`;
-    
-    if(list.length === 0) container.innerHTML = `<p style="color:var(--muted)">${this.t('no_comments')}</p>`;
-    else container.innerHTML = list.map(c => `<div style="padding:8px;border-bottom:1px dashed #eee"><b>${escapeHtml(c.name)}</b> <small style="color:var(--muted)">• ${formatDateISO(c.date)}</small><div style="margin-top:6px">${marked.parseInline(c.text)}</div></div>`).join('');
+  /* ─── COMMENTS ─── */
+  _renderComments() {
+    const id = this.currentId;
+    const list = this.comments[id]?.[this.lang] || [];
+    $('talk_count').textContent = `(${list.length})`;
+    $('comments_list').innerHTML = list.length
+      ? list.map(c => `<div class="comment-block"><b>${esc(c.name)}</b> <small style="color:var(--muted)">· ${fmt(c.date)}</small><div style="margin-top:4px;font-size:.9rem">${marked.parseInline(c.text)}</div></div>`).join('')
+      : `<p style="color:var(--muted);padding:10px 0">${this.t('no_comments')}</p>`;
   },
 
   addComment() {
-    const id = this.currentArticleId;
-    if(!id) return alert('Відкрий статтю, щоб коментувати.');
-    
-    const nameInput = document.getElementById('comment_name').value.trim();
-    const text = document.getElementById('comment_text').value.trim();
-    if(!text) return alert(this.t('alert_comment'));
-    
-    const name = nameInput || this.user || 'Анонім';
-    if(!this.comments[id]) this.comments[id] = {};
-    if(!this.comments[id][this.lang]) this.comments[id][this.lang] = [];
-    
-    this.comments[id][this.lang].push({ name, text, date: (new Date()).toISOString() });
-    this.saveAll();
-    
-    document.getElementById('comment_text').value = '';
-    document.getElementById('comment_name').value = '';
-    this.renderComments();
-    this.updateProfileUI();
+    const id = this.currentId; if (!id) return;
+    const text = $('comment_text').value.trim();
+    if (!text) return this._showToast('✍️ ' + (this.lang==='uk'?'Введіть коментар':'Write a comment'));
+    const name = $('comment_name').value.trim() || this.user || 'Анонім';
+    if (!this.comments[id]) this.comments[id] = {};
+    if (!this.comments[id][this.lang]) this.comments[id][this.lang] = [];
+    this.comments[id][this.lang].push({ name, text, date: new Date().toISOString() });
+    $('comment_text').value = ''; $('comment_name').value = '';
+    this._saveAll();
+    this._renderComments();
+    this._updateProfile();
   },
 
-  renderHistory() {
-    const id = this.currentArticleId;
-    const container = document.getElementById('history_list');
-    const logs = this.history[id] || [];
-    
-    if(logs.length === 0) { container.innerHTML = `<p style="color:var(--muted)">${this.t('no_history')}</p>`; return; }
-    container.innerHTML = logs.slice().reverse().map(l => `<div style="padding:8px;border-bottom:1px dashed #eee"><b>${escapeHtml(l.user||'Анонім')}</b> — ${l.action} <div style="color:var(--muted);font-size:.85rem">${formatDateISO(l.date)}</div></div>`).join('');
+  /* ─── HISTORY ─── */
+  _renderHistory() {
+    const logs = (this.history[this.currentId] || []).slice().reverse();
+    $('history_list').innerHTML = logs.length
+      ? logs.map(l => `<div class="history-item"><b>${esc(l.user||'Анонім')}</b> — ${esc(l.action)} <span style="color:var(--muted);font-size:.8rem">${fmt(l.date)}</span></div>`).join('')
+      : `<p style="color:var(--muted);padding:10px 0">${this.t('no_history')}</p>`;
   },
 
-  /* ===== EXPORT ===== */
-  exportMarkdown() {
-    const id = this.currentArticleId;
-    if(!id) return;
-    const art = this.articles.find(a => a.id === id);
-    const tr = this.getTranslation(art);
-    
-    let md = `# ${tr.title}\n\n${tr.intro}\n\n`;
-    (tr.sections || []).forEach(s => { md += `## ${s.title}\n${s.content}\n\n`; });
-    
-    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `${slugToFilename(tr.title)}.md`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  },
-
-  /* ===== SEARCH ===== */
+  /* ─── SEARCH ─── */
   search() {
-    const q = (document.getElementById('searchInput').value || '').trim().toLowerCase();
-    const cat = document.getElementById('searchCategory').value || '';
-    
+    const q = ($('searchInput').value || $('searchInputHome').value || '').trim().toLowerCase();
+    const cat = $('searchCategory')?.value || '';
     const results = this.articles.filter(a => {
-      if(cat && a.category !== cat) return false;
-      const tr = this.getTranslation(a);
-      const hay = `${tr.title} ${tr.intro} ${(tr.sections||[]).map(s=>s.title+' '+s.content).join(' ')}`.toLowerCase();
-      const keywords = (tr.keywords||[]).join(' ').toLowerCase();
-      return (!q) || hay.includes(q) || keywords.includes(q) || tr.title.toLowerCase().includes(q);
+      if (cat && a.category !== cat) return false;
+      const tr = this.tr(a);
+      const hay = `${tr.title} ${tr.intro} ${(tr.sections||[]).map(s=>s.title+' '+s.content).join(' ')} ${(tr.keywords||[]).join(' ')}`.toLowerCase();
+      return !q || hay.includes(q);
     });
-    
-    const container = document.getElementById('articleList');
-    container.innerHTML = '';
-    
-    if(results.length === 0) {
-      container.innerHTML = `<div class="card">${this.t('alert_not_found').replace('❌ ','')} <b>${escapeHtml(q)}</b></div>`;
+    const list = $('articleList');
+    list.innerHTML = '';
+    if (!results.length) {
+      list.innerHTML = `<div class="card" style="color:var(--muted)">Нічого не знайдено за запитом «${esc(q)}»</div>`;
     } else {
       results.forEach(a => {
-        const tr = this.getTranslation(a);
-        const el = document.createElement('div');
-        el.className = 'card';
-        const highlightedTitle = q ? tr.title.replace(new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), m => `<mark>${m}</mark>`) : tr.title;
-        el.innerHTML = `<strong style="font-size:1rem;cursor:pointer" onclick="app.loadArticle('${a.id}')">${highlightedTitle}</strong>
-                        <div style="color:var(--muted)">${escapeHtml((tr.intro||'').slice(0,160))}${(tr.intro||'').length>160?'…':''}</div>`;
-        container.appendChild(el);
+        const tr = this.tr(a);
+        const div = document.createElement('div');
+        div.className = 'card art-card';
+        div.onclick = () => this.loadArticle(a.id);
+        const re = q ? new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi') : null;
+        const htitle = re ? tr.title.replace(re, m => `<mark>${m}</mark>`) : esc(tr.title);
+        div.innerHTML = `<div class="art-title">${htitle}</div>
+          <div class="art-excerpt">${esc((tr.intro||'').replace(/\*\*/g,'').slice(0,160))}…</div>`;
+        list.appendChild(div);
       });
     }
-    this.showSection('homeView');
+    this._showSection('homeView');
   },
 
-  /* ===== REQUESTS ===== */
-  openRequest() { this.showSection('requestView'); },
-  
-  submitRequest(e) {
-    e.preventDefault();
-    const t = document.getElementById('req_title').value.trim();
-    const d = document.getElementById('req_desc').value.trim();
-    if(!t) return alert('Вкажіть назву.');
-    
-    const reqs = loadJSON(STORAGE_KEYS.REQUESTS, []);
-    reqs.unshift({ title: t, desc: d, date: (new Date()).toISOString(), user: this.user || 'Анонім' });
-    saveJSON(STORAGE_KEYS.REQUESTS, reqs);
-    
-    alert(this.t('alert_request_sent'));
-    document.getElementById('req_title').value = '';
-    document.getElementById('req_desc').value = '';
+  /* ─── FILTER BY CATEGORY ─── */
+  filterCategory(cat) {
+    if ($('searchCategory')) $('searchCategory').value = cat;
+    const results = this.articles.filter(a => a.category === cat);
+    const list = $('articleList');
+    list.innerHTML = '';
+    results.forEach(a => {
+      const tr = this.tr(a);
+      const div = document.createElement('div');
+      div.className = 'card art-card';
+      div.onclick = () => this.loadArticle(a.id);
+      div.innerHTML = `<div class="art-title">${esc(tr.title)}</div>
+        <div class="art-excerpt">${esc((tr.intro||'').replace(/\*\*/g,'').slice(0,160))}…</div>`;
+      list.appendChild(div);
+    });
+    this._showSection('homeView');
+  },
+
+  /* ─── EXPORT ─── */
+  exportMarkdown() {
+    const art = this.articles.find(a => a.id === this.currentId);
+    if (!art) return;
+    const tr = this.tr(art);
+    let md = `# ${tr.title}\n\n${tr.intro}\n\n`;
+    (tr.sections||[]).forEach(s => { md += `## ${s.title}\n\n${s.content}\n\n`; });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([md], { type: 'text/markdown' }));
+    a.download = `${tr.title.replace(/\s+/g,'_').toLowerCase()}.md`;
+    document.body.appendChild(a); a.click(); a.remove();
+  },
+
+  /* ─── RECENT ─── */
+  showRecent() {
+    this._navigate('/recent');
+    this._renderRecent();
+  },
+
+  _renderRecent() {
+    const all = [];
+    for (const aid in this.history) {
+      (this.history[aid]||[]).forEach(h => all.push({...h, artId: aid}));
+    }
+    all.sort((a,b) => new Date(b.date)-new Date(a.date));
+    const el = $('recent_list');
+    if (!all.length) {
+      el.innerHTML = `<p style="color:var(--muted)">${this.t('no_recent')}</p>`;
+    } else {
+      el.innerHTML = all.slice(0,30).map(h => {
+        const art = this.articles.find(x => x.id === h.artId);
+        const title = art ? this.tr(art).title : h.artId;
+        return `<div class="history-item"><b>${esc(h.user||'Анонім')}</b> — ${esc(h.action)}
+          <a href="#" onclick="app.loadArticle('${esc(h.artId)}');return false;" style="margin-left:6px">→ ${esc(title)}</a>
+          <span style="color:var(--muted);font-size:.8rem;margin-left:6px">${fmt(h.date)}</span></div>`;
+      }).join('');
+    }
+    $('recent_heading').textContent = this.t('recent_heading');
+    this._showSection('recentView');
+  },
+
+  /* ─── REQUEST ─── */
+  openRequest() {
+    this._navigate('/request');
+    this._renderRequest();
+  },
+  _renderRequest() { this._showSection('requestView'); },
+
+  submitRequest() {
+    const t = $('req_title').value.trim();
+    const d = $('req_desc').value.trim();
+    if (!t) return this._showToast('⚠️ ' + (this.lang==='uk'?'Введіть назву':'Enter a title'));
+    const reqs = ld(SK.REQUESTS, []);
+    reqs.unshift({ title: t, desc: d, date: new Date().toISOString(), user: this.user || 'Анонім' });
+    sv(SK.REQUESTS, reqs);
+    $('req_title').value = ''; $('req_desc').value = '';
+    this._showToast(this.lang==='uk'?'✅ Запит надіслано!':'✅ Request submitted!');
     this.showHome();
   },
 
-  /* ===== PROFILE / LOGIN ===== */
-  openProfile() { this.showSection('profileView'); this.updateProfileUI(); },
-  
-  openLogin() {
-    document.getElementById('modal_login').style.display = 'flex';
-    document.getElementById('modal_nick').value = this.user || '';
-    document.getElementById('modal_nick').focus();
+  /* ─── PROFILE ─── */
+  openProfile() {
+    this._navigate('/profile');
+    this._renderProfile();
   },
-  
-  closeLogin() { document.getElementById('modal_login').style.display = 'none'; },
-  
-  saveLogin() {
-    const nick = document.getElementById('modal_nick').value.trim();
-    if(!nick) return alert(this.t('alert_login'));
-    this.user = nick;
-    localStorage.setItem(STORAGE_KEYS.USER, nick);
-    document.getElementById('ui_username').textContent = nick;
-    this.closeLogin();
-    this.updateProfileUI();
-  },
-  
-  logout() {
-    if(confirm('Вийти (нік буде видалено локально)?')) {
-      localStorage.removeItem(STORAGE_KEYS.USER);
-      this.user = null;
-      document.getElementById('ui_username').textContent = '—';
-      this.updateProfileUI();
-    }
-  },
-  
-  updateProfileUI() {
-    document.getElementById('profile_nick').textContent = this.user || '—';
-    document.getElementById('profile_edits').textContent = this.user ? (this.edits[this.user] || 0) : 0;
-    
-    let commentsCount = 0;
-    for(const id in this.comments) {
-      for(const lang in this.comments[id]) {
-        (this.comments[id][lang]||[]).forEach(c => { if(c.name === this.user) commentsCount++; });
+  _renderProfile() { this._showSection('profileView'); this._updateProfile(); },
+  _updateProfile() {
+    $('profile_nick').textContent    = this.user || '—';
+    $('profile_edits').textContent   = this.user ? (this.edits[this.user]||0) : 0;
+    let cc = 0;
+    for (const id in this.comments) {
+      for (const l in this.comments[id]) {
+        (this.comments[id][l]||[]).forEach(c => { if(c.name===this.user) cc++; });
       }
     }
-    document.getElementById('profile_comments').textContent = commentsCount;
-    document.getElementById('ui_username').textContent = this.user || '—';
+    $('profile_comments').textContent = cc;
   },
 
-  /* ===== UTILS ===== */
+  /* ─── LOGIN ─── */
+  openLogin()  { $('modal_login').classList.remove('hidden'); $('modal_nick').value = this.user||''; $('modal_nick').focus(); },
+  closeLogin() { $('modal_login').classList.add('hidden'); },
+  saveLogin()  {
+    const nick = $('modal_nick').value.trim();
+    if (!nick) return;
+    this.user = nick;
+    localStorage.setItem(SK.USER, nick);
+    $('ui_username').textContent = nick;
+    this.closeLogin();
+    this._updateProfile();
+  },
+
+  logout() {
+    if (!confirm(this.lang==='uk'?'Вийти?':'Log out?')) return;
+    localStorage.removeItem(SK.USER);
+    this.user = null;
+    $('ui_username').textContent = '—';
+    this._updateProfile();
+  },
+
+  /* ─── UTILS ─── */
   randomArticle() {
-    const id = this.articles[Math.floor(Math.random() * this.articles.length)].id;
+    const id = this.articles[Math.floor(Math.random()*this.articles.length)].id;
     this.loadArticle(id);
   },
-  
-  switchTab(evt, tabName) {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    evt.currentTarget.classList.add('active');
-    document.getElementById('tab_content').classList.toggle('hidden', tabName !== 'content');
-    document.getElementById('tab_talk').classList.toggle('hidden', tabName !== 'talk');
-    document.getElementById('tab_history').classList.toggle('hidden', tabName !== 'history');
-    if(tabName === 'talk') this.renderComments();
-    if(tabName === 'history') this.renderHistory();
-  },
-  
+
   toggleDarkMode() {
     this.darkMode = !this.darkMode;
     document.body.classList.toggle('dark', this.darkMode);
-    localStorage.setItem(STORAGE_KEYS.DARK, this.darkMode);
+    localStorage.setItem(SK.DARK, this.darkMode);
   },
-  
+
   clearLocal() {
-    if(confirm('Прибрати всі локальні дані (статті не видаляються, але історія і коментарі очистяться)?')) {
-      localStorage.removeItem(STORAGE_KEYS.COMMENTS);
-      localStorage.removeItem(STORAGE_KEYS.HISTORY);
-      localStorage.removeItem(STORAGE_KEYS.EDITS);
-      localStorage.removeItem(STORAGE_KEYS.REQUESTS);
-      localStorage.removeItem(STORAGE_KEYS.USER);
-      this.comments = {};
-      this.history = {};
-      this.edits = {};
-      this.user = null;
-      this.updateProfileUI();
-      alert('Очищено.');
-    }
-  }
+    if (!confirm(this.lang==='uk'?'Очистити коментарі, історію, профіль?':'Clear comments, history, profile?')) return;
+    [SK.COMMENTS, SK.HISTORY, SK.EDITS, SK.REQUESTS, SK.USER].forEach(k => localStorage.removeItem(k));
+    this.comments = {}; this.history = {}; this.edits = {}; this.user = null;
+    $('ui_username').textContent = '—';
+    this._updateProfile();
+    this._showToast(this.lang==='uk'?'🗑️ Очищено':'🗑️ Cleared');
+  },
+
+  _saveAll() {
+    sv(SK.ARTICLES, this.articles);
+    sv(SK.COMMENTS, this.comments);
+    sv(SK.HISTORY,  this.history);
+    sv(SK.EDITS,    this.edits);
+    if (this.user) localStorage.setItem(SK.USER, this.user);
+  },
+
+  _updateRightPanel() {
+    let totalEdits = Object.values(this.edits).reduce((s,n)=>s+n, 0);
+    let totalComments = 0;
+    for (const id in this.comments) for (const l in this.comments[id]) totalComments += (this.comments[id][l]||[]).length;
+    if ($('stat_arts'))      $('stat_arts').textContent      = this.articles.length;
+    if ($('stat_edits'))     $('stat_edits').textContent     = totalEdits;
+    if ($('stat_comments'))  $('stat_comments').textContent  = totalComments;
+  },
+
+  _updateBadge() {
+    const n = Object.values(this.history).reduce((s,a)=>s+(a?a.length:0), 0);
+    $('badge_changes').textContent = n;
+  },
+
+  _updateProfile: function() { this._updateProfile && this._updateProfile(); }
 };
 
-/* ================= GLOBAL EXPOSURE FOR INLINE ONCLICKS ================= */
+// Fix self-reference
+_app._updateProfile = _app._updateProfile || function(){};
+
+/* ══════════════════════════════════════════════════
+   MOBILE HAMBURGER (Claude v3)
+══════════════════════════════════════════════════ */
+function toggleSidebar() {
+  const sb = $('leftSidebar');
+  const ov = $('sidebarOverlay');
+  sb.classList.toggle('open');
+  ov.classList.toggle('visible');
+}
+function closeSidebar() {
+  $('leftSidebar').classList.remove('open');
+  $('sidebarOverlay').classList.remove('visible');
+}
+
+/* ══════════════════════════════════════════════════
+   GLOBAL app PROXY (for HTML onclick handlers)
+══════════════════════════════════════════════════ */
 window.app = {
-  init: () => app.init(),
-  renderHome: () => app.renderHome(),
-  showHome: () => app.showHome(),
-  loadArticle: (id) => app.loadArticle(id),
-  search: () => app.search(),
-  saveLogin: () => app.saveLogin(),
-  openLogin: () => app.openLogin(),
-  closeLogin: () => app.closeLogin(),
-  addComment: () => app.addComment(),
-  enableEdit: () => app.enableEdit(),
-  cancelEdit: () => app.cancelEdit(),
-  saveEdit: () => app.saveEdit(),
-  addSection: () => app.addSection(),
-  removeSection: (btn) => app.removeSection(btn),
-  exportMarkdown: () => app.exportMarkdown(),
-  setLang: (l) => app.setLang(l),
-  toggleDarkMode: () => app.toggleDarkMode(),
-  openProfile: () => app.openProfile(),
-  openRequest: () => app.openRequest(),
-  submitRequest: (e) => app.submitRequest(e),
-  randomArticle: () => app.randomArticle(),
-  showRecent: () => app.showRecent(),
-  filterCategory: (c) => app.filterCategory(c),
-  showSection: (id) => app.showSection(id),
-  switchTab: (evt, tab) => app.switchTab(evt, tab)
+  get featuredId() { return _app.featuredId; },
+  get currentId()  { return _app.currentId; },
+  init:           ()    => _app.init(),
+  showHome:       ()    => _app.showHome(),
+  loadArticle:    (id)  => _app.loadArticle(id),
+  search:         ()    => _app.search(),
+  filterCategory: (c)   => _app.filterCategory(c),
+  randomArticle:  ()    => _app.randomArticle(),
+  showRecent:     ()    => _app.showRecent(),
+  openRequest:    ()    => _app.openRequest(),
+  submitRequest:  ()    => _app.submitRequest(),
+  openProfile:    ()    => _app.openProfile(),
+  openLogin:      ()    => _app.openLogin(),
+  closeLogin:     ()    => _app.closeLogin(),
+  saveLogin:      ()    => _app.saveLogin(),
+  logout:         ()    => _app.logout(),
+  enableEdit:     ()    => _app.enableEdit(),
+  cancelEdit:     ()    => _app.cancelEdit(),
+  saveEdit:       ()    => _app.saveEdit(),
+  addSection:     ()    => _app.addSection(),
+  exportMarkdown: ()    => _app.exportMarkdown(),
+  addComment:     ()    => _app.addComment(),
+  shareArticle:   ()    => _app.shareArticle(),
+  setLang:        (l)   => _app.setLang(l),
+  toggleDarkMode: ()    => _app.toggleDarkMode(),
+  clearLocal:     ()    => _app.clearLocal(),
+  switchTab:      (e,t) => _app.switchTab(e,t)
 };
 
-/* ================= INIT ================= */
-document.addEventListener('DOMContentLoaded', () => {
-  app.init();
-  
-  // Modal close on outside click
-  document.getElementById('modal_login').addEventListener('click', (e) => {
-    if(e.target === e.currentTarget) app.closeLogin();
-  });
-  
-  // Tab buttons event listeners
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', (ev) => {
-      const tab = btn.getAttribute('data-tab') || 'content';
-      app.switchTab(ev, tab);
-    });
-  });
-  
-  // Set initial language button state
-  app.setLang(app.lang);
-});
+/* ══════════════════════════════════════════════════
+   BOOT
+══════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => _app.init());
 </script>
 </body>
-</html>
+</html> 
