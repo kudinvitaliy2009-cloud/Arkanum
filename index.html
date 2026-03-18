@@ -51,6 +51,11 @@
   .search-row input, .search-row select { padding: 8px; border-radius: 8px; border: 1px solid #ddd; flex: 1; background: var(--card); color: var(--ink) }
   .card { background: var(--card); border: 1px solid #e6dfd4; padding: 14px; border-radius: 10px; box-shadow: 0 4px 18px rgba(26,18,8,0.04); margin-bottom: 14px }
   
+  <!-- Встав це в <style> після існуючих правил для dark mode -->
+  .dark nav.topnav a { color: rgba(247,243,236,.9) !important }
+  .dark nav.topnav a:hover { color: var(--gold) !important }
+  .dark .logo-text .name { color: var(--paper) }
+  .dark .logo span { color: #d9c89b }
   .featured { display: grid; grid-template-columns: 1fr 260px; gap: 0; overflow: hidden }
   .featured .body { padding: 18px }
   .featured .img { background: linear-gradient(135deg, var(--ink), var(--blue)); color: rgba(255,255,255,.15); display: flex; align-items: flex-end; justify-content: center; padding: 12px; min-height: 180px }
@@ -591,6 +596,90 @@ const app = {
   featuredId: 'antikythera',
   currentArticleId: null,
   darkMode: false,
+
+/* ================= ROUTING SYSTEM ================= */
+// Додай це в об'єкт app перед init()
+
+router: {
+  routes: {
+    home: '/',
+    article: '/article/:id',
+    recent: '/recent',
+    profile: '/profile',
+    request: '/request'
+  },
+  
+  // Parse hash URL like #/article/kharkiv
+  parse() {
+    const hash = window.location.hash.replace('#', '') || '/';
+    const parts = hash.split('/').filter(p => p);
+    
+    if (parts.length === 0) return { name: 'home', params: {} };
+    if (parts[0] === 'article' && parts[1]) return { name: 'article', params: { id: parts[1] } };
+    if (parts[0] === 'recent') return { name: 'recent', params: {} };
+    if (parts[0] === 'profile') return { name: 'profile', params: {} };
+    if (parts[0] === 'request') return { name: 'request', params: {} };
+    
+    return { name: 'home', params: {} };
+  },
+  
+  // Navigate to route
+  go(name, params = {}) {
+    let hash = this.routes[name];
+    for (const [key, val] of Object.entries(params)) {
+      hash = hash.replace(`:${key}`, val);
+    }
+    window.location.hash = hash;
+  },
+  
+  // Handle route change
+  handle() {
+    const route = this.parse();
+    if (route.name === 'article' && route.params.id) {
+      app.loadArticle(route.params.id);
+    } else if (route.name === 'recent') {
+      app.showRecent();
+    } else if (route.name === 'profile') {
+      app.openProfile();
+    } else if (route.name === 'request') {
+      app.openRequest();
+    } else {
+      app.renderHome();
+    }
+  }
+},
+
+// Оновлений init():
+init() {
+  // ...existing load code...
+  
+  // Listen for hash changes
+  window.addEventListener('hashchange', () => this.router.handle());
+  
+  // Handle initial route
+  this.router.handle();
+  
+  this.updateRightPanel();
+  this.updateChangeBadge();
+},
+
+// Оновлені навігаційні функції:
+showHome() { 
+  this.router.go('home'); 
+},
+showRecent() { 
+  this.router.go('recent'); 
+},
+openProfile() { 
+  this.router.go('profile'); 
+},
+openRequest() { 
+  this.router.go('request'); 
+},
+loadArticle(id) {
+  // ...existing article loading code...
+  this.router.go('article', { id }); // Update URL after loading
+},
 
   init() {
     this.articles = loadJSON(STORAGE_KEYS.ARTICLES, BASE_ARTICLES);
