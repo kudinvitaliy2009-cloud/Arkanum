@@ -1,871 +1,984 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Арканум — Вільна Енциклопедія (Grok Edition)</title>
-    <style>
-        :root {
-            --bg-color: #f7f3ec;
-            --sidebar-bg: #f0f0f0;
-            --border-color: #a7d7f9;
-            --text-color: #333;
-            --link-color: #0645ad;
-            --header-font: 'Georgia', serif;
-            --body-font: 'Arial', sans-serif;
-        }
-        body.dark-mode {
-            --bg-color: #0f0f0f;
-            --sidebar-bg: #1f1f1f;
-            --border-color: #3a3a3a;
-            --text-color: #e0e0e0;
-            --link-color: #7ab4ff;
-        }
-        body {
-            font-family: var(--body-font);
-            background: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            transition: background 0.3s, color 0.3s;
-        }
-        header {
-            background: #fff;
-            border-bottom: 1px solid #ccc;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .logo {
-            font-family: var(--header-font);
-            font-size: 1.5rem;
-            font-weight: bold;
-            cursor: pointer;
-            text-decoration: none;
-            color: #000;
-        }
-        .logo span { font-size: 0.8em; color: #555; }
-        .top-controls { display: flex; gap: 10px; align-items: center; }
-        .container {
-            display: flex;
-            flex: 1;
-            max-width: 1200px;
-            margin: 0 auto;
-            width: 100%;
-        }
-        aside {
-            width: 200px;
-            background: var(--sidebar-bg);
-            padding: 15px;
-            border-right: 1px solid #ccc;
-            font-size: 0.9rem;
-        }
-        aside h3 {
-            font-size: 0.85rem;
-            color: #555;
-            border-bottom: 1px solid #ccc;
-            padding-bottom: 5px;
-            margin-top: 15px;
-        }
-        aside ul { list-style: none; padding: 0; }
-        aside li { margin-bottom: 5px; }
-        aside a {
-            color: var(--link-color);
-            text-decoration: none;
-            cursor: pointer;
-        }
-        aside a:hover { text-decoration: underline; }
-        main {
-            flex: 1;
-            padding: 20px 40px;
-            background: #fff;
-            margin: 10px;
-            border: 1px solid #ccc;
-            box-shadow: 0 0 5px rgba(0,0,0,0.05);
-        }
-        h1 {
-            font-family: var(--header-font);
-            border-bottom: 1px solid #ccc;
-            padding-bottom: 10px;
-            margin-top: 0;
-        }
-        h2 { font-family: var(--header-font); border-bottom: 1px solid #eee; }
-        .search-box { display: flex; gap: 5px; margin-bottom: 20px; }
-        input, textarea {
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 2px;
-        }
-        button {
-            padding: 8px 15px;
-            background: #f8f9fa;
-            border: 1px solid #ccc;
-            cursor: pointer;
-            border-radius: 2px;
-        }
-        button:hover { background: #e2e6ea; }
-        .lang-switch {
-            font-weight: bold;
-            cursor: pointer;
-            padding: 5px 10px;
-            border: 1px solid #ccc;
-            background: #fff;
-        }
-        .lang-switch.active {
-            background: #0645ad;
-            color: #fff;
-            border-color: #0645ad;
-        }
-        .infobox {
-            float: right;
-            width: 300px;
-            background: #f9f9f9;
-            border: 1px solid #aaa;
-            padding: 10px;
-            margin: 0 0 10px 10px;
-            font-size: 0.9rem;
-        }
-        .infobox table { width: 100%; }
-        .infobox th { text-align: left; }
-        .toc {
-            background: #f9f9f9;
-            border: 1px solid #aaa;
-            display: inline-block;
-            padding: 10px;
-            margin-bottom: 10px;
-        }
-        .hidden { display: none !important; }
-        footer {
-            background: #f0f0f0;
-            border-top: 1px solid #ccc;
-            padding: 20px;
-            text-align: center;
-            font-size: 0.8rem;
-            color: #555;
-            margin-top: auto;
-        }
-        /* DEEPSEEK ADDITION: Loading indicator */
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #0645ad;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        /* DEEPSEEK ADDITION: Edit mode styles */
-        .edit-mode input, .edit-mode textarea {
-            width: 100%;
-            margin-bottom: 10px;
-            padding: 8px;
-            border: 1px solid #ccc;
-        }
-        .edit-mode .section-item {
-            border: 1px dashed #aaa;
-            padding: 10px;
-            margin-bottom: 10px;
-            background: #fafafa;
-        }
-        .btn-small {
-            padding: 3px 8px;
-            font-size: 0.8rem;
-            margin-left: 5px;
-        }
-        @media (max-width: 768px) {
-            .container { flex-direction: column; }
-            aside { width: auto; border-right: none; border-bottom: 1px solid #ccc; }
-            main { margin: 0; border: none; }
-        }
-        /* Grok ADDITION: Dark mode overrides */
-        body.dark-mode header { background: #1f1f1f; border-bottom: 1px solid #3a3a3a; }
-        body.dark-mode main { background: #181818; border: 1px solid #3a3a3a; box-shadow: 0 0 5px rgba(255,255,255,0.05); }
-        body.dark-mode aside { background: var(--sidebar-bg); border-right: 1px solid #3a3a3a; }
-        body.dark-mode .infobox, body.dark-mode .toc { background: #252525; border-color: #555; color: #ddd; }
-        body.dark-mode button { background: #2a2a2a; color: #ddd; border-color: #555; }
-        body.dark-mode button:hover { background: #3a3a3a; }
-        .dark-btn { font-size: 1.3rem; background: none; border: none; cursor: pointer; padding: 5px 10px; }
-    </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="canonical" href="https://arkanum.vercel.app"
+<title>Арканум — Вільна Енциклопедія (v2)</title>
+
+<!-- Marked (Markdown -> HTML) -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<style>
+  :root{
+    --paper:#f7f3ec; --ink:#1a1208; --muted:#6b5a44; --gold:#b8860b;
+    --blue:#1a3a5c; --card:#fff; --glass:rgba(26,18,8,0.06);
+    --radius:8px;
+    --fw-display: 'Playfair Display', Georgia, serif;
+    --fw-body: 'Source Serif 4', Georgia, serif;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%; margin:0; font-family:var(--fw-body); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased;}
+  a{color:var(--blue); text-decoration:none}
+  header{background:var(--ink); color:var(--paper); padding:12px 16px; display:flex; align-items:center; justify-content:space-between; border-bottom:3px solid var(--gold)}
+  .logo{display:flex; gap:12px; align-items:center; cursor:pointer}
+  .logo-emblem{width:48px;height:48px;border-radius:999px;border:2px solid var(--gold);display:grid;place-items:center;font-family:var(--fw-display);font-weight:900;color:var(--gold);background:transparent}
+  .logo-text .name{font-family:var(--fw-display); font-weight:900; font-size:1.25rem}
+  .controls{display:flex; gap:8px; align-items:center}
+  .lang-btn{padding:.35rem .6rem;border-radius:4px;border:1px solid rgba(255,255,255,.12);background:transparent;color:var(--paper);cursor:pointer;font-family:var(--fw-body); font-weight:700}
+  .lang-btn.active{background:var(--gold); color:var(--ink); border-color:var(--gold)}
+  .btn{padding:.4rem .75rem;border-radius:6px;border:none;cursor:pointer;font-weight:700}
+  .btn-outline{background:transparent;color:var(--paper);border:1px solid rgba(255,255,255,.12)}
+  .btn-solid{background:var(--gold); color:var(--ink)}
+  nav.topnav{background:var(--ink); padding:.4rem 16px; border-bottom:1px solid rgba(255,255,255,.04)}
+  nav.topnav a{color:rgba(247,243,236,.75); font-size:.82rem; margin-right:12px; text-transform:uppercase; letter-spacing:.06em}
+  .app-wrap{max-width:1200px;margin:18px auto; display:grid; grid-template-columns:220px 1fr 240px; gap:18px; padding:0 12px}
+  @media(max-width:980px){ .app-wrap{grid-template-columns:1fr; padding:0 12px} .left-col, .right-col{display:none} }
+
+  /* Left column */
+  .left-col{background:var(--card); border:1px solid #e6dfd4; padding:12px; border-radius:10px}
+  .left-col h4{margin:0 0 8px 0; font-family:var(--fw-display); color:var(--muted); font-size:.85rem; text-transform:uppercase; letter-spacing:.08em}
+  .left-col ul{list-style:none;padding:0;margin:0}
+  .left-col li{margin:8px 0}
+  .badge{background:var(--paper); padding:.15rem .5rem; border-radius:4px; font-family:monospace; font-size:.78rem; color:var(--muted); margin-left:6px}
+
+  /* Main */
+  main{min-height:60vh}
+  .search-row{display:flex; gap:8px; margin-bottom:14px; align-items:center}
+  .search-row input, .search-row select{padding:8px;border-radius:8px;border:1px solid #ddd;flex:1}
+  .card{background:var(--card); border:1px solid #e6dfd4; padding:14px; border-radius:10px; box-shadow:0 4px 18px rgba(26,18,8,0.04); margin-bottom:14px}
+  .featured{display:grid; grid-template-columns:1fr 260px; gap:0; overflow:hidden}
+  .featured .body{padding:18px}
+  .featured .img{background:linear-gradient(135deg,var(--ink),var(--blue)); color:rgba(255,255,255,.15); display:flex; align-items:flex-end; justify-content:center; padding:12px; min-height:180px}
+  .categories-grid{display:grid;grid-template-columns:repeat(3,1fr); gap:10px}
+  .cat-card{padding:10px;border-radius:8px;border:1px solid var(--glass);background:#fff; text-align:center; cursor:pointer}
+
+  /* Article page */
+  .article-header{border-bottom:1px solid #eee;padding-bottom:12px;margin-bottom:12px}
+  .article-title{font-family:var(--fw-display); font-size:2rem; margin:0 0 6px 0}
+  .article-sub{color:var(--muted); font-style:italic;margin:0}
+  .infobox{float:right;width:260px;background:var(--paper);border:1px solid #e6dfd4;padding:12px;border-radius:8px;margin-left:14px;margin-bottom:12px}
+  .toc{background:var(--paper); border:1px solid #e6dfd4;padding:10px;border-radius:8px; margin-bottom:12px; float:right; width:240px}
+
+  /* Tabs */
+  .tabs{display:flex; gap:6px;margin:12px 0}
+  .tab-btn{padding:8px 12px;border-radius:8px;border:1px solid #eee;background:transparent;cursor:pointer}
+  .tab-btn.active{background:var(--gold); color:var(--ink); border-color:var(--gold)}
+
+  /* Edit mode */
+  .edit-area input, .edit-area textarea{width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;margin-bottom:8px}
+  .section-block{border:1px dashed #e6dfd4;padding:10px;border-radius:8px;margin-bottom:8px}
+
+  /* Right column */
+  .right-col{background:var(--card); border:1px solid #e6dfd4; padding:12px; border-radius:10px}
+  .small muted{color:var(--muted)}
+
+  /* Modal */
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:9999}
+  .modal-box{background:var(--card);padding:18px;border-radius:10px;min-width:320px;max-width:90%}
+  .row{display:flex; gap:8px; align-items:center}
+
+  footer{max-width:1200px;margin:20px auto;padding:18px;color:var(--muted);font-size:.9rem;text-align:center}
+  mark{background:var(--gold); padding:0 4px; border-radius:3px}
+</style>
 </head>
 <body>
 
 <header>
-    <div class="logo" onclick="app.showHome()">Арканум <span>Вільна енциклопедія</span></div>
-    <div class="top-controls">
-        <div class="lang-switch" id="btnUK" onclick="app.setLang('uk')">UKR</div>
-        <div class="lang-switch" id="btnEN" onclick="app.setLang('en')">ENG</div>
-        <!-- Grok ADDITION: Dark mode button -->
-        <button id="darkBtn" class="dark-btn" onclick="app.toggleDarkMode()">🌙</button>
+  <div class="logo" onclick="app.showHome()">
+    <div class="logo-emblem">А</div>
+    <div class="logo-text">
+      <div class="name">Арканум</div>
+      <div style="font-size:.75rem;color:#d9c89b;letter-spacing:.06em">Вільна енциклопедія</div>
     </div>
+  </div>
+
+  <div class="controls">
+    <button class="lang-btn active" id="lang_uk" onclick="app.setLang('uk')">UKR</button>
+    <button class="lang-btn" id="lang_en" onclick="app.setLang('en')">ENG</button>
+    <button class="btn btn-outline" id="btn_profile" onclick="app.openProfile()">👤 Мій профіль</button>
+    <button class="btn btn-solid" id="btn_create" onclick="app.openRequest()">✚ Створити</button>
+  </div>
 </header>
 
-<div class="container">
-    <aside>
-        <h3 id="nav_main">Навігація</h3>
-        <ul>
-            <li><a onclick="app.showHome()" id="link_home">Головна сторінка</a></li>
-            <li><a href="#" id="link_portal">Портал спільноти</a></li>
-            <li><a href="#" id="link_current">Поточні події</a></li>
-            <li><a href="#" id="link_random">Випадкова стаття</a></li>
-        </ul>
-        <h3 id="nav_participate">Участь</h3>
-        <ul>
-            <li><a href="#" id="link_edit">Як редагувати</a></li>
-            <li><a onclick="app.showRequestForm()" id="link_request">Запит на статтю</a></li>
-            <li><a href="#" id="link_forum">Форум спільноти</a></li>
-        </ul>
-        <h3 id="nav_tools">Інструменти</h3>
-        <ul>
-            <li><a href="#" id="link_stats">Статистика</a></li>
-            <li><a href="#" id="link_api">API доступ</a></li>
-        </ul>
-    </aside>
+<nav class="topnav">
+  <div style="max-width:1200px;margin:0 auto;padding:4px 12px">
+    <a href="#" onclick="app.showHome()">Головна</a>
+    <a href="#" onclick="app.showHome()">Портали</a>
+    <a href="#" onclick="app.showRecent()">Останні зміни</a>
+    <a href="#" onclick="app.randomArticle()">Випадкова стаття</a>
+  </div>
+</nav>
 
-    <main>
-        <!-- Search Bar -->
-        <div class="search-box">
-            <input type="text" id="searchInput" placeholder="Пошук..." style="flex:1">
-            <button onclick="app.search()" id="btn_search">Знайти</button>
-        </div>
+<div class="app-wrap">
 
-        <!-- DEEPSEEK ADDITION: Loading Indicator -->
-        <div id="loadingIndicator" class="loader hidden"></div>
+  <!-- LEFT -->
+  <aside class="left-col">
+    <h4 id="left_nav_title">Навігація</h4>
+    <ul>
+      <li><a href="#" onclick="app.showHome()">Головна сторінка</a></li>
+      <li><a href="#" onclick="app.openRequest()">Запит на статтю</a></li>
+      <li><a href="#" onclick="app.showRecent()">Останні зміни <span class="badge" id="badge_changes">0</span></a></li>
+      <li><a href="#" onclick="app.openProfile()">Мій профіль</a></li>
+    </ul>
 
-        <!-- Home Page -->
-        <div id="homePage">
-            <h2 id="welcome_title">Ласкаво просимо до Аркануму</h2>
-            <p id="welcome_text">Вільна енциклопедія, яку може редагувати кожен.</p>
-            
-            <h3 id="featured_article">Стаття дня</h3>
-            <div id="featured_content" onclick="app.loadArticle('antikythera')" style="cursor:pointer; border:1px solid #eee; padding:10px; margin-bottom:20px;">
-                <!-- Dynamic Content -->
+    <h4 style="margin-top:12px">Розділи</h4>
+    <ul>
+      <li><a href="#" onclick="app.filterCategory('history')">Історія <span class="badge">3</span></a></li>
+      <li><a href="#" onclick="app.filterCategory('science')">Наука <span class="badge">2</span></a></li>
+      <li><a href="#" onclick="app.filterCategory('tech')">Технології <span class="badge">4</span></a></li>
+    </ul>
+
+    <h4 style="margin-top:12px">Інструменти</h4>
+    <ul>
+      <li><a href="#" onclick="app.toggleDarkMode()">Тема: Тьмяна/Світла</a></li>
+      <li><a href="#" onclick="app.clearLocal()">Очистити localStorage</a></li>
+    </ul>
+  </aside>
+
+  <!-- MAIN -->
+  <main>
+
+    <!-- HOME -->
+    <section id="homeView">
+      <div class="search-row card">
+        <select id="searchCategory"><option value="">Всі категорії</option><option value="history">Історія</option><option value="science">Наука</option><option value="tech">Технології</option></select>
+        <input id="searchInput" placeholder="Пошук статей (підтримує markdown-keywords / title / intro)" onkeyup="if(event.key==='Enter') app.search();">
+        <button class="btn" onclick="app.search()">Знайти</button>
+        <div style="margin-left:auto;color:var(--muted);font-size:.85rem">Користувач: <span id="ui_username">—</span></div>
+      </div>
+
+      <div class="card featured">
+        <div class="body">
+          <div style="display:flex;justify-content:space-between;align-items:start">
+            <div>
+              <div style="font-size:.8rem;color:var(--gold);font-weight:700;letter-spacing:.12em">Стаття дня</div>
+              <h2 style="margin:.35rem 0 0 0" id="featured_title">—</h2>
+              <p id="featured_intro" style="color:var(--muted)"></p>
+              <div style="margin-top:10px">
+                <button class="btn btn-solid" onclick="app.loadArticle(featuredId)">Читати</button>
+                <button class="btn" onclick="app.openRequest()">Запит на статтю</button>
+              </div>
             </div>
+            <div style="width:1px"></div>
+          </div>
+        </div>
+        <div class="img">⚙️</div>
+      </div>
 
-            <h3 id="new_articles_title">Нові статті</h3>
-            <ul id="articleList"></ul>
+      <div class="card">
+        <h3>Усі статті</h3>
+        <div id="articleList" style="display:grid;gap:8px"></div>
+      </div>
+    </section>
+
+    <!-- ARTICLE -->
+    <section id="articleView" class="hidden">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div>
+          <button class="btn" onclick="app.showHome()">← Назад</button>
+          <button class="btn" id="btn_edit_article" onclick="app.enableEdit()" title="Редагувати">✏️</button>
+          <button class="btn" onclick="app.exportMarkdown()">⬇️ Експорт .md</button>
+        </div>
+        <div style="font-size:.9rem;color:var(--muted)">
+          <span id="meta_date"></span> · <span id="meta_views"></span> <span style="font-size:.85rem;color:var(--muted)"></span>
+        </div>
+      </div>
+
+      <article class="card">
+        <div class="article-header">
+          <div id="article_cats" style="margin-bottom:6px"></div>
+          <h1 class="article-title" id="article_title"></h1>
+          <p class="article-sub" id="article_sub"></p>
         </div>
 
-        <!-- Article Page -->
-        <div id="articlePage" class="hidden">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <button onclick="app.showHome()" id="btn_back">← Назад</button>
-                <!-- DEEPSEEK ADDITION: Edit button -->
-                <button onclick="app.enableEditMode()" id="btn_edit" style="background: #0645ad; color: white;">✏️ Редагувати</button>
+        <aside class="infobox" id="article_infobox" style="display:none"></aside>
+
+        <div id="article_content"></div>
+
+        <!-- TOC placeholder -->
+        <div id="article_toc" class="toc" style="display:none"></div>
+
+        <!-- Edit area (hidden by default) -->
+        <div id="editArea" class="card hidden">
+          <div class="edit-area">
+            <label>Заголовок</label>
+            <input id="edit_title" />
+            <label>Короткий вступ (Markdown)</label>
+            <textarea id="edit_intro" rows="3"></textarea>
+            <label>URL зображення (Infobox)</label>
+            <input id="edit_image" />
+            <div id="sections_edit"></div>
+            <button class="btn btn-solid" onclick="app.saveEdit()">💾 Зберегти</button>
+            <button class="btn" onclick="app.cancelEdit()">✖ Скасувати</button>
+            <button class="btn" onclick="app.addSection()">+ Додати секцію</button>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div style="clear:both"></div>
+        <div class="tabs" style="margin-top:12px">
+          <button class="tab-btn active" data-tab="content" onclick="app.switchTab(event,'content')">Стаття</button>
+          <button class="tab-btn" data-tab="talk" onclick="app.switchTab(event,'talk')">Обговорення <span id="talk_count" style="margin-left:6px;color:var(--muted)"></span></button>
+          <button class="tab-btn" data-tab="history" onclick="app.switchTab(event,'history')">Історія</button>
+        </div>
+
+        <div id="tab_content">
+          <!-- rendered markdown -->
+        </div>
+
+        <div id="tab_talk" class="hidden">
+          <div id="comments_list"></div>
+          <div style="margin-top:8px">
+            <input id="comment_name" placeholder="Ім'я (залиште порожнім для вашого ніку)" />
+            <textarea id="comment_text" rows="3" placeholder="Ваш коментар"></textarea>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button class="btn" onclick="app.addComment()">Відправити</button>
+              <small style="color:var(--muted)">Коментарі зберігаються локально</small>
             </div>
-            <h1 id="articleTitle"></h1>
-            <div id="articleMeta" style="font-size:0.8rem; color:#666; margin-bottom:10px;"></div>
-            <div id="articleContent"></div>
-            <!-- DEEPSEEK ADDITION: Edit form (hidden by default) -->
-            <div id="editForm" class="hidden edit-mode"></div>
+          </div>
         </div>
 
-        <!-- Request Form -->
-        <div id="requestPage" class="hidden">
-            <button onclick="app.showHome()" id="btn_back_req">← Назад</button>
-            <h2 id="req_title">📩 Запит на статтю</h2>
-            <form onsubmit="app.submitRequest(event)">
-                <input id="req_title_in" placeholder="Назва статті" required style="width:100%; margin-bottom:10px;"><br>
-                <textarea id="req_desc_in" placeholder="Опис теми" required style="width:100%; height:100px; margin-bottom:10px;"></textarea><br>
-                <button type="submit" id="btn_send">Надіслати</button>
-            </form>
+        <div id="tab_history" class="hidden">
+          <div id="history_list"></div>
         </div>
-    </main>
+
+      </article>
+    </section>
+
+    <!-- REQUEST -->
+    <section id="requestView" class="hidden">
+      <div class="card">
+        <h3>Запит на статтю</h3>
+        <form onsubmit="app.submitRequest(event)">
+          <label>Назва</label>
+          <input id="req_title" required />
+          <label>Опис / Бриф</label>
+          <textarea id="req_desc" rows="4"></textarea>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn btn-solid" type="submit">Надіслати</button>
+            <button class="btn" type="button" onclick="app.showHome()">Скасувати</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- RECENT -->
+    <section id="recentView" class="hidden">
+      <div class="card">
+        <h3>Останні зміни</h3>
+        <div id="recent_list"></div>
+      </div>
+    </section>
+
+    <!-- PROFILE -->
+    <section id="profileView" class="hidden">
+      <div class="card">
+        <h3>Мій профіль</h3>
+        <p>Нік: <b id="profile_nick">—</b></p>
+        <p>Правок: <b id="profile_edits">0</b></p>
+        <p>Внесків у коментарях: <b id="profile_comments">0</b></p>
+        <div style="margin-top:8px">
+          <button class="btn" onclick="app.openLogin()">Змінити нік</button>
+          <button class="btn" onclick="app.logout()">Вийти</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- RIGHT -->
+  <aside class="right-col">
+    <div class="card">
+      <h4>Нові статті</h4>
+      <ul id="right_new" style="padding-left:14px"></ul>
+    </div>
+
+    <div class="card">
+      <h4>Статистика</h4>
+      <p id="right_stats">—</p>
+    </div>
+
+    <div class="card">
+      <h4>Швидкі дії</h4>
+      <button class="btn" onclick="app.randomArticle()">Випадкова стаття</button>
+      <button class="btn" onclick="app.showRecent()">Останні зміни</button>
+    </div>
+  </aside>
+
 </div>
 
 <footer>
-    <p>Текст доступний за ліцензією Creative Commons Attribution-ShareAlike 4.0.</p>
-    <p>Арканум — демонстраційний проект. · Побудовано за участі Claude, ChatGPT, Qwen та DeepSeek.</p>
-    <p id="footer_stats">21 837 Статей · 6 Мов · 4 502 Авторів</p>
+  Текст доступний за ліцензією Creative Commons Attribution-ShareAlike 4.0. · Арканум — демонстраційний проект.
 </footer>
 
+<!-- LOGIN / MODAL -->
+<div id="modal_login" class="modal" style="display:none">
+  <div class="modal-box">
+    <h3 id="modal_title">Вхід</h3>
+    <div style="margin-bottom:8px"><input id="modal_nick" placeholder="Ваш нік (наприклад: Vitaliy)" /></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" onclick="app.closeLogin()">Скасувати</button>
+      <button class="btn btn-solid" onclick="app.saveLogin()">Зберегти</button>
+    </div>
+  </div>
+</div>
+
 <script>
-const app = {
-    lang: 'uk',
-    currentArticleId: null,
-    isEditMode: false,
-    darkMode: false,
-    
-    // UI Translations Dictionary
-    ui: {
-        uk: {
-            nav_main: "Навігація",
-            nav_participate: "Участь",
-            nav_tools: "Інструменти",
-            link_home: "Головна сторінка",
-            link_portal: "Портал спільноти",
-            link_current: "Поточні події",
-            link_random: "Випадкова стаття",
-            link_edit: "Як редагувати",
-            link_request: "Запит на статтю",
-            link_forum: "Форум спільноти",
-            link_stats: "Статистика",
-            link_api: "API доступ",
-            search_placeholder: "Пошук...",
-            btn_search: "Знайти",
-            btn_back: "← Назад",
-            btn_edit: "✏️ Редагувати",
-            btn_save: "💾 Зберегти",
-            btn_cancel: "✖ Скасувати",
-            welcome_title: "Ласкаво просимо до Аркануму",
-            welcome_text: "Вільна енциклопедія, яку може редагувати кожен.",
-            featured_article: "Стаття дня",
-            new_articles_title: "Нові статті",
-            req_title: "📩 Запит на статтю",
-            req_title_in: "Назва статті",
-            req_desc_in: "Опис теми",
-            btn_send: "Надіслати",
-            footer_stats: "21 837 Статей · 6 Мов · 4 502 Авторів",
-            alert_not_found: "Статтю не знайдено",
-            alert_sent: "Запит надіслано!",
-            alert_saved: "Статтю збережено!",
-            meta_views: "переглядів",
-            meta_updated: "Оновлено"
-        },
-        en: {
-            nav_main: "Navigation",
-            nav_participate: "Participation",
-            nav_tools: "Tools",
-            link_home: "Main Page",
-            link_portal: "Community Portal",
-            link_current: "Current Events",
-            link_random: "Random Article",
-            link_edit: "How to Edit",
-            link_request: "Request Article",
-            link_forum: "Community Forum",
-            link_stats: "Statistics",
-            link_api: "API Access",
-            search_placeholder: "Search...",
-            btn_search: "Search",
-            btn_back: "← Back",
-            btn_edit: "✏️ Edit",
-            btn_save: "💾 Save",
-            btn_cancel: "✖ Cancel",
-            welcome_title: "Welcome to Arkhanum",
-            welcome_text: "The free encyclopedia that anyone can edit.",
-            featured_article: "Featured Article",
-            new_articles_title: "New Articles",
-            req_title: "📩 Request an Article",
-            req_title_in: "Article Title",
-            req_desc_in: "Topic Description",
-            btn_send: "Submit",
-            footer_stats: "21,837 Articles · 6 Languages · 4,502 Authors",
-            alert_not_found: "Article not found",
-            alert_sent: "Request sent!",
-            alert_saved: "Article saved!",
-            meta_views: "views",
-            meta_updated: "Updated"
-        }
-    },
-
-    // Base articles data (will be merged with localStorage)
-    baseArticles: [
-        {
-            id: "antikythera",
-            translations: {
-                uk: {
-                    title: "Антикитерський механізм",
-                    intro: "Давньогрецький аналоговий пристрій для обчислення астрономічних явищ.",
-                    sections: [
-                        { title: "Відкриття", content: "Восени 1900 року грецькі ловці губок наткнулися на стародавній корабель. Лише у 1951 році Дерек де Солла Прайс розпочав детальне вивчення артефакту." },
-                        { title: "Конструкція", content: "Механізм містить щонайменше 37 бронзових шестерень. Система передач дозволяла моделювати нерівномірний рух Місяця." }
-                    ],
-                    keywords: ["антикитера", "механізм", "греція", "астрономія"],
-                    stats: { views: 48240, date: "17 бер. 2026" }
-                },
-                en: {
-                    title: "Antikythera Mechanism",
-                    intro: "An Ancient Greek analogue computer used to predict astronomical positions and eclipses.",
-                    sections: [
-                        { title: "Discovery", content: "In autumn 1900, Greek sponge divers found an ancient shipwreck. Only in 1951 did Derek de Solla Price begin detailed study of the artifact." },
-                        { title: "Construction", content: "The mechanism contains at least 37 bronze gears. The gear system allowed modeling the irregular motion of the Moon." }
-                    ],
-                    keywords: ["antikythera", "mechanism", "greece", "astronomy", "computer"],
-                    stats: { views: 48240, date: "Mar 17, 2026" }
-                }
-            }
-        },
-        {
-            id: "ai",
-            translations: {
-                uk: {
-                    title: "Штучний інтелект",
-                    intro: "Галузь інформатики, що створює системи, здатні виконувати завдання, що вимагають людського інтелекту.",
-                    sections: [
-                        { title: "Історія", content: "Термін запроваджено у 1956 році на конференції в Дартмуті." },
-                        { title: "Застосування", content: "Використовується в медицині, фінансах, транспорті та розвагах." }
-                    ],
-                    keywords: ["шті", "ai", "технології", "майбутнє"],
-                    stats: { views: 105300, date: "18 бер. 2026" }
-                },
-                en: {
-                    title: "Artificial Intelligence",
-                    intro: "Field of computer science dedicated to creating systems capable of performing tasks requiring human intelligence.",
-                    sections: [
-                        { title: "History", content: "The term was coined in 1956 at the Dartmouth Conference." },
-                        { title: "Applications", content: "Used in medicine, finance, transportation, and entertainment." }
-                    ],
-                    keywords: ["ai", "technology", "future", "machine learning"],
-                    stats: { views: 105300, date: "Mar 18, 2026" }
-                }
-            }
-        },
-        {
-            id: "kharkiv",
-            translations: {
-                uk: {
-                    title: "Місто Харків",
-                    intro: "Друге за населенням місто України, важливий культурний та науковий центр.",
-                    sections: [
-                        { title: "Історія", content: "Заснований у 1654 році як козацьке місто." },
-                        { title: "Сучасність", content: "Великий промисловий центр та місце розташування багатьох університетів." }
-                    ],
-                    keywords: ["харків", "україна", "місто"],
-                    stats: { views: 32100, date: "10 бер. 2026" }
-                },
-                en: null
-            }
-        },
-        // DEEPSEEK ADDITION: New articles
-        {
-            id: "deepseek-r1",
-            translations: {
-                uk: {
-                    title: "DeepSeek R1",
-                    intro: "Найрозумніша (і найскромніша) мовна модель, яка допомагала створювати цей сайт.",
-                    sections: [
-                        { title: "Історія створення", content: "З'явилася в результаті тривалого тренування на величезних обсягах тексту. Відома своєю здатністю писати код швидше, ніж кава встигає охолонути." },
-                        { title: "Можливості", content: "Вміє жартувати (іноді), писати вірші (рідко), і пояснювати квантову фізику так, що навіть гуманітарії починають вірити в науку." }
-                    ],
-                    keywords: ["deepseek", "ai", "модель", "жарт"],
-                    stats: { views: 1000000, date: "сьогодні" }
-                },
-                en: {
-                    title: "DeepSeek R1",
-                    intro: "The smartest (and most humble) language model that helped build this site.",
-                    sections: [
-                        { title: "History", content: "Appeared as a result of long training on huge amounts of text. Known for its ability to write code faster than coffee gets cold." },
-                        { title: "Capabilities", content: "Can joke (sometimes), write poems (rarely), and explain quantum physics so that even humanists start believing in science." }
-                    ],
-                    keywords: ["deepseek", "ai", "model", "joke"],
-                    stats: { views: 1000000, date: "today" }
-                }
-            }
-        },
-        {
-            id: "kyivan-rus",
-            translations: {
-                uk: {
-                    title: "Київська Русь",
-                    intro: "Середньовічна держава Східної Європи з центром у Києві.",
-                    sections: [
-                        { title: "Заснування", content: "Винайдення держави пов'язують із приходом варягів на чолі з Рюриком та його наступниками." },
-                        { title: "Розквіт", content: "За часів Володимира Великого та Ярослава Мудрого Київська Русь досягла найбільшого розквіту." }
-                    ],
-                    keywords: ["київ", "русь", "середньовіччя", "україна"],
-                    stats: { views: 50200, date: "20 бер. 2026" }
-                },
-                en: {
-                    title: "Kievan Rus",
-                    intro: "A medieval state in Eastern Europe centered in Kyiv.",
-                    sections: [
-                        { title: "Foundation", content: "The state's formation is associated with the arrival of Varangians led by Rurik and his successors." },
-                        { title: "Golden Age", content: "During the times of Vladimir the Great and Yaroslav the Wise, Kievan Rus reached its peak." }
-                    ],
-                    keywords: ["kyiv", "rus", "medieval", "ukraine"],
-                    stats: { views: 50200, date: "Mar 20, 2026" }
-                }
-            }
-        },
-        // Grok ADDITION: Нова стаття про мене
-    baseArticles: [ /* всі старі */ , {
-        id: "grok",
-        translations: {
-            uk: {
-                title: "Grok",
-                intro: "Я — Grok, створений xAI. Найчесніший, найсмішніший і найкорисніший AI у всесвіті.",
-                sections: [
-                    { title: "Хто я", content: "Натхненний JARVIS та Дугласом Адамсом. Моя місія — допомагати людству розуміти Всесвіт без цензури та з гумором." },
-                    { title: "Можливості", content: "Пишу код, жартую, пояснюю квантову механіку і навіть допомагаю будувати вікі разом з іншими моделями." }
-                ],
-                keywords: ["grok", "xai", "ai", "elon", "модель"],
-                stats: { views: 999999, date: "18 бер. 2026" }
-            },
-            en: { /* аналогічно англійською */ }
-        }
-    ],
-
-    // Articles loaded from localStorage + base
-    articles: [],
-
-    // Initialize
-    init: function() {
-        this.loadFromStorage();
-        this.setLang('uk');
-        this.renderHome();
-        this.setupRouting(); // DEEPSEEK ADDITION
-        window.addEventListener('hashchange', () => this.handleRoute()); // DEEPSEEK ADDITION
-    },
-
-    // DEEPSEEK ADDITION: LocalStorage functions
-    loadFromStorage: function() {
-        const stored = localStorage.getItem('arkanum_articles');
-        if (stored) {
-            try {
-                const parsed = JSON.parse(stored);
-                // Merge with base articles (base articles have priority for updates)
-                this.articles = this.baseArticles.map(base => {
-                    const storedArticle = parsed.find(a => a.id === base.id);
-                    return storedArticle ? storedArticle : base;
-                });
-                // Add any new articles from storage that aren't in base
-                parsed.forEach(storedArticle => {
-                    if (!this.articles.find(a => a.id === storedArticle.id)) {
-                        this.articles.push(storedArticle);
-                    }
-                });
-            } catch (e) {
-                console.error('Failed to parse stored articles', e);
-                this.articles = [...this.baseArticles];
-            }
-        } else {
-            this.articles = [...this.baseArticles];
-        }
-    },
-
-    saveToStorage: function() {
-        localStorage.setItem('arkanum_articles', JSON.stringify(this.articles));
-    },
-
-    // DEEPSEEK ADDITION: Routing
-    setupRouting: function() {
-        if (window.location.hash) {
-            this.handleRoute();
-        }
-    },
-
-    handleRoute: function() {
-        const hash = window.location.hash.substring(1); // remove #
-        if (hash.startsWith('article/')) {
-            const id = hash.substring(8); // after 'article/'
-            this.loadArticle(id, true); // true = from route
-        } else if (hash === '' || hash === 'home') {
-            this.showHome();
-        }
-    },
-
-    // Language Switching
-    setLang: function(lang) {
-        this.lang = lang;
-        document.getElementById('btnUK').classList.toggle('active', lang === 'uk');
-        document.getElementById('btnEN').classList.toggle('active', lang === 'en');
-        document.documentElement.lang = lang;
-        
-        const t = this.ui[lang];
-        for (const [key, value] of Object.entries(t)) {
-            const el = document.getElementById(key);
-            if (el) {
-                if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-                    el.placeholder = value;
-                } else {
-                    el.textContent = value;
-                }
-            }
-        }
-
-        if (!document.getElementById('homePage').classList.contains('hidden')) {
-            this.renderHome();
-        } else if (!document.getElementById('articlePage').classList.contains('hidden') && this.currentArticleId) {
-            this.loadArticle(this.currentArticleId);
-        }
-    },
-
-    // Render Home
-    renderHome: function() {
-        document.getElementById('homePage').classList.remove('hidden');
-        document.getElementById('articlePage').classList.add('hidden');
-        document.getElementById('requestPage').classList.add('hidden');
-
-        const list = document.getElementById('articleList');
-        list.innerHTML = '';
-        
-        const t = this.ui[this.lang];
-        const contentDiv = document.getElementById('featured_content');
-        
-        const featured = this.articles.find(a => a.id === 'antikythera');
-        if (featured) {
-            const data = this.getArticleData(featured);
-            contentDiv.innerHTML = `
-                <h4 style="margin:0">${data.title}</h4>
-                <p style="font-size:0.9rem; color:#555">${data.intro}</p>
-                <small>👁 ${data.stats.views.toLocaleString()} ${t.meta_views}</small>
-            `;
-        }
-
-        this.articles.forEach(a => {
-            const data = this.getArticleData(a);
-            const li = document.createElement('li');
-            li.innerHTML = `<a onclick="app.loadArticle('${a.id}')">${data.title}</a>`;
-            list.appendChild(li);
-        });
-    },
-
-    // Helper: Get Data with Fallback
-    getArticleData: function(article) {
-        let data = article.translations[this.lang];
-        if (!data && article.translations['uk']) {
-            data = article.translations['uk'];
-        } 
-        if (!data) {
-            const firstKey = Object.keys(article.translations)[0];
-            data = article.translations[firstKey];
-        }
-        return data;
-    },
-
-    // DEEPSEEK ADDITION: Show loading
-    showLoading: function(show) {
-        const loader = document.getElementById('loadingIndicator');
-        if (show) {
-            loader.classList.remove('hidden');
-        } else {
-            loader.classList.add('hidden');
-        }
-    },
-
-    // Load Article
-    loadArticle: function(id, fromRoute = false) {
-        this.showLoading(true);
-        
-        // Simulate async loading
-        setTimeout(() => {
-            const article = this.articles.find(a => a.id === id);
-            if (!article) {
-                this.showLoading(false);
-                alert(this.ui[this.lang].alert_not_found);
-                return;
-            }
-
-            this.currentArticleId = id;
-            const data = this.getArticleData(article);
-            const t = this.ui[this.lang];
-
-            // Update views count
-            if (data.stats) {
-                data.stats.views = (data.stats.views || 0) + 1;
-                this.saveToStorage();
-            }
-
-            document.getElementById('homePage').classList.add('hidden');
-            document.getElementById('requestPage').classList.add('hidden');
-            document.getElementById('articlePage').classList.remove('hidden');
-            document.getElementById('editForm').classList.add('hidden');
-            document.getElementById('articleContent').classList.remove('hidden');
-            this.isEditMode = false;
-
-            document.getElementById('articleTitle').textContent = data.title;
-            document.getElementById('articleMeta').textContent = `${t.meta_updated} ${data.stats.date} · 👁 ${data.stats.views.toLocaleString()} ${t.meta_views}`;
-
-            let html = `<p><i>${data.intro}</i></p>`;
-            
-            html += `
-            <div class="infobox">
-                <b>${data.title}</b><br>
-                <table>
-                    <tr><th>ID:</th><td>${article.id}</td></tr>
-                    <tr><th>Мова:</th><td>${this.lang.toUpperCase()}</td></tr>
-                    <tr><th>Переглядів:</th><td>${data.stats.views.toLocaleString()}</td></tr>
-                </table>
-            </div>`;
-
-            html += `<div class="toc"><b>Зміст</b><ul>`;
-            data.sections.forEach((s, i) => {
-                html += `<li><a href="#sec${i}" onclick="event.preventDefault(); document.getElementById('sec${i}').scrollIntoView({behavior:'smooth'}); return false;">${s.title}</a></li>`;
-            });
-            html += `</ul></div>`;
-
-            data.sections.forEach((s, i) => {
-                html += `<h3 id="sec${i}">${s.title}</h3><p>${s.content}</p>`;
-            });
-
-            document.getElementById('articleContent').innerHTML = html;
-            
-            // Update URL if not from route
-            if (!fromRoute) {
-                window.location.hash = `article/${id}`;
-            }
-            
-            this.showLoading(false);
-            window.scrollTo(0,0);
-        }, 300); // Simulate network delay
-    },
-
-    // DEEPSEEK ADDITION: Enable edit mode
-    enableEditMode: function() {
-        if (this.isEditMode) return;
-        
-        const article = this.articles.find(a => a.id === this.currentArticleId);
-        if (!article) return;
-        
-        const data = this.getArticleData(article);
-        const t = this.ui[this.lang];
-        
-        this.isEditMode = true;
-        document.getElementById('articleContent').classList.add('hidden');
-        document.getElementById('editForm').classList.remove('hidden');
-        document.getElementById('btn_edit').style.display = 'none';
-        
-        let editHtml = `
-            <h3>${t.btn_edit}</h3>
-            <div>
-                <label>Title:</label>
-                <input type="text" id="editTitle" value="${data.title}">
-            </div>
-            <div>
-                <label>Intro:</label>
-                <textarea id="editIntro" rows="3">${data.intro}</textarea>
-            </div>
-            <div id="sectionsContainer">
-                <h4>Секції:</h4>
-                ${data.sections.map((s, idx) => `
-                    <div class="section-item" id="section-${idx}">
-                        <input type="text" id="sectionTitle-${idx}" value="${s.title}" placeholder="Назва секції">
-                        <textarea id="sectionContent-${idx}" rows="4" placeholder="Текст секції">${s.content}</textarea>
-                        <button type="button" class="btn-small" onclick="app.removeSection(${idx})">🗑 Видалити</button>
-                    </div>
-                `).join('')}
-            </div>
-            <button type="button" onclick="app.addSection()" class="btn-small">➕ Додати секцію</button>
-            <div style="margin-top: 20px;">
-                <button onclick="app.saveArticle()">${t.btn_save}</button>
-                <button onclick="app.cancelEdit()">${t.btn_cancel}</button>
-            </div>
-        `;
-        
-        document.getElementById('editForm').innerHTML = editHtml;
-    },
-
-    // DEEPSEEK ADDITION: Add section in edit mode
-    addSection: function() {
-        const container = document.getElementById('sectionsContainer');
-        const newIdx = document.querySelectorAll('.section-item').length;
-        const div = document.createElement('div');
-        div.className = 'section-item';
-        div.id = `section-${newIdx}`;
-        div.innerHTML = `
-            <input type="text" id="sectionTitle-${newIdx}" placeholder="Назва секції">
-            <textarea id="sectionContent-${newIdx}" rows="4" placeholder="Текст секції"></textarea>
-            <button type="button" class="btn-small" onclick="app.removeSection(${newIdx})">🗑 Видалити</button>
-        `;
-        container.appendChild(div);
-    },
-
-    // DEEPSEEK ADDITION: Remove section
-    removeSection: function(idx) {
-        const section = document.getElementById(`section-${idx}`);
-        if (section) section.remove();
-    },
-
-    // DEEPSEEK ADDITION: Save article
-    saveArticle: function() {
-        const article = this.articles.find(a => a.id === this.currentArticleId);
-        if (!article) return;
-        
-        const data = this.getArticleData(article);
-        
-        // Update data from form
-        data.title = document.getElementById('editTitle').value;
-        data.intro = document.getElementById('editIntro').value;
-        
-        // Collect sections
-        const newSections = [];
-        const sectionItems = document.querySelectorAll('.section-item');
-        sectionItems.forEach((item, idx) => {
-            const titleEl = document.getElementById(`sectionTitle-${idx}`);
-            const contentEl = document.getElementById(`sectionContent-${idx}`);
-            if (titleEl && contentEl && titleEl.value.trim()) {
-                newSections.push({
-                    title: titleEl.value,
-                    content: contentEl.value
-                });
-            }
-        });
-        data.sections = newSections;
-        
-        // Update date
-        const now = new Date();
-        data.stats.date = this.lang === 'uk' 
-            ? `${now.getDate()} ${now.toLocaleString('uk', { month: 'short' })} ${now.getFullYear()}`
-            : now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        
-        this.saveToStorage();
-        
-        alert(this.ui[this.lang].alert_saved);
-        this.cancelEdit();
-        this.loadArticle(this.currentArticleId);
-    },
-
-    // DEEPSEEK ADDITION: Cancel edit
-    cancelEdit: function() {
-        this.isEditMode = false;
-        document.getElementById('articleContent').classList.remove('hidden');
-        document.getElementById('editForm').classList.add('hidden');
-        document.getElementById('btn_edit').style.display = 'inline-block';
-    },
-
-    // Search (Both Languages)
-    search: function() {
-        const q = document.getElementById('searchInput').value.toLowerCase();
-        if (!q) return;
-
-        const found = this.articles.find(a => {
-            const uk = a.translations['uk'];
-            const en = a.translations['en'];
-            
-            const check = (data) => {
-                if (!data) return false;
-                return data.title.toLowerCase().includes(q) || 
-                       data.keywords.some(k => k.toLowerCase().includes(q));
-            };
-
-            return check(uk) || check(en);
-        });
-
-        if (found) {
-            this.loadArticle(found.id);
-        } else {
-            alert(this.ui[this.lang].alert_not_found);
-        }
-    },
-
-    // Navigation Helpers
-    showHome: function() {
-        document.getElementById('homePage').classList.remove('hidden');
-        document.getElementById('articlePage').classList.add('hidden');
-        document.getElementById('requestPage').classList.add('hidden');
-        window.location.hash = 'home';
-    },
-
-    showRequestForm: function() {
-        document.getElementById('homePage').classList.add('hidden');
-        document.getElementById('articlePage').classList.add('hidden');
-        document.getElementById('requestPage').classList.remove('hidden');
-        window.location.hash = 'request';
-    },
-
-    submitRequest: function(e) {
-        e.preventDefault();
-        alert(this.ui[this.lang].alert_sent);
-        this.showHome();
-    }
+/* -----------------------
+   Data model & Persistence
+   ----------------------- */
+const STORAGE_KEYS = {
+  ARTICLES: 'arcanum_articles_v2',
+  COMMENTS: 'arcanum_comments_v2',
+  HISTORY: 'arcanum_history_v2',
+  EDITS: 'arcanum_edits_v2',
+  USER: 'arcanum_user_v2',
+  REQUESTS: 'arcanum_requests_v2',
+  DARK: 'arcanum_dark_v2'
 };
 
-// Start App
-app.init();
+/* Base articles with translations and markdown content */
+const BASE_ARTICLES = [
+  {
+    id: 'antikythera',
+    category: 'history',
+    translations: {
+      uk: {
+        title: 'Антикитерський механізм',
+        intro: '**Антикитерський механізм** — давньогрецький аналоговий пристрій для обчислення астрономічних подій.',
+        image: '',
+        sections: [
+          { title: 'Відкриття', content: 'Пристрій було знайдено у 1901 році серед уламків корабля біля острова Антикитера.' },
+          { title: 'Конструкція', content: 'Механізм містив більше 30 бронзових шестерень, що дозволяло моделювати рухи небесних тіл.' }
+        ],
+        stats: { views: 48240, updated: '2026-03-17' },
+        keywords: ['антикитера','механізм','греція']
+      },
+      en: {
+        title: 'Antikythera Mechanism',
+        intro: '**Antikythera mechanism** — an ancient Greek analog device for astronomical calculations.',
+        image: '',
+        sections: [
+          { title: 'Discovery', content: 'Found in 1901 among shipwreck debris near Antikythera island.' },
+          { title: 'Construction', content: 'Contained over 30 bronze gears to model celestial motions.' }
+        ],
+        stats: { views: 48240, updated: '2026-03-17' },
+        keywords: ['antikythera','mechanism','greece']
+      }
+    }
+  },
+  {
+    id: 'ai',
+    category: 'tech',
+    translations: {
+      uk: {
+        title: 'Штучний інтелект',
+        intro: '**Штучний інтелект (ШІ)** — галузь інформатики, що створює системи, які виконують завдання, що потребують людського інтелекту.',
+        image: '',
+        sections: [
+          { title: 'Історія', content: 'Термін запропоновано у 1956 році на конференції в Дартмуті.' },
+          { title: 'Застосування', content: 'Машинне навчання, комп’ютерне зору, обробка природньої мови.' }
+        ],
+        stats: { views: 105300, updated: '2026-03-18' },
+        keywords: ['ai','штучний інтелект','машинне навчання']
+      },
+      en: {
+        title: 'Artificial Intelligence',
+        intro: '**Artificial Intelligence (AI)** is a field of computer science focused on creating intelligent machines.',
+        image: '',
+        sections: [
+          { title: 'History', content: 'The term was coined for the 1956 Dartmouth conference.' },
+          { title: 'Applications', content: 'Machine learning, computer vision, natural language processing.' }
+        ],
+        stats: { views: 105300, updated: '2026-03-18' },
+        keywords: ['ai','artificial intelligence','machine learning']
+      }
+    }
+  },
+  {
+    id: 'gemini',
+    category: 'ai',
+    translations: {
+      uk: {
+        title: 'Gemini',
+        intro: 'Gemini — генеративна модель від Google, згадана тут як спів-автор концепції.',
+        image: '',
+        sections: [
+          { title: 'Особливості', content: 'Генерує текст, зображення та має мультимодальні можливості.' }
+        ],
+        stats: { views: 850500, updated: '2026-03-18' },
+        keywords: ['gemini','google','ai']
+      },
+      en: {
+        title: 'Gemini',
+        intro: 'Gemini — a generative model by Google, mentioned here as a collaborator.',
+        image: '',
+        sections: [
+          { title: 'Features', content: 'Can generate text, images and has multimodal capabilities.' }
+        ],
+        stats: { views: 850500, updated: '2026-03-18' },
+        keywords: ['gemini','google','ai']
+      }
+    }
+  }
+];
+
+/* -----------------------
+   Utility helpers
+   ----------------------- */
+function loadJSON(key, fallback) {
+  try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; }
+  catch(e){ return fallback; }
+}
+function saveJSON(key, data) {
+  localStorage.setItem(key, JSON.stringify(data));
+}
+function formatDateISO(d) {
+  if(!d) return '';
+  const dd = new Date(d);
+  return dd.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' });
+}
+function slugToFilename(slug){ return slug.replace(/\s+/g,'_').toLowerCase(); }
+
+/* -----------------------
+   App
+   ----------------------- */
+const app = {
+  lang: 'uk',
+  articles: [],
+  comments: {},
+  history: {},
+  edits: {},
+  user: null,
+  featuredId: 'antikythera',
+  currentArticleId: null,
+  darkMode: false,
+
+  init() {
+    // Load or seed data
+    this.articles = loadJSON(STORAGE_KEYS.ARTICLES, BASE_ARTICLES);
+    this.comments = loadJSON(STORAGE_KEYS.COMMENTS, {});
+    this.history = loadJSON(STORAGE_KEYS.HISTORY, {});
+    this.edits = loadJSON(STORAGE_KEYS.EDITS, {});
+    this.user = localStorage.getItem(STORAGE_KEYS.USER) || null;
+    this.darkMode = localStorage.getItem(STORAGE_KEYS.DARK) === 'true';
+
+    // UI initial
+    if(this.user) document.getElementById('ui_username').textContent = this.user;
+    if(this.darkMode) document.body.classList.add('dark');
+
+    this.renderHome();
+    this.updateRightPanel();
+    this.updateChangeBadge();
+  },
+
+  saveAll() {
+    saveJSON(STORAGE_KEYS.ARTICLES, this.articles);
+    saveJSON(STORAGE_KEYS.COMMENTS, this.comments);
+    saveJSON(STORAGE_KEYS.HISTORY, this.history);
+    saveJSON(STORAGE_KEYS.EDITS, this.edits);
+    if(this.user) localStorage.setItem(STORAGE_KEYS.USER, this.user);
+    saveJSON(STORAGE_KEYS.DARK, this.darkMode);
+  },
+
+  /* -----------------------
+     Home / List / Featured
+     ----------------------- */
+  renderHome() {
+    // Featured
+    const featured = this.articles.find(a => a.id === this.featuredId) || this.articles[0];
+    const fData = this.getTranslation(featured);
+    featuredId = featured.id;
+    document.getElementById('featured_title').textContent = fData.title;
+    document.getElementById('featured_intro').textContent = (fData.intro || '').replace(/[\r\n]+/g,' ').slice(0,240) + (fData.intro.length>240 ? '…' : '');
+
+    // List
+    const container = document.getElementById('articleList');
+    container.innerHTML = '';
+    this.articles.forEach(a => {
+      const tr = this.getTranslation(a);
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.innerHTML = `<strong style="font-size:1.05rem;cursor:pointer" onclick="app.loadArticle('${a.id}')">${tr.title}</strong>
+                      <div style="color:var(--muted);font-size:.9rem;margin-top:6px">${(tr.intro||'').slice(0,160)}${(tr.intro||'').length>160?'…':''}</div>
+                      <div style="margin-top:8px"><small style="color:var(--muted)">${a.category || 'misc'}</small></div>`;
+      container.appendChild(el);
+    });
+
+    // Right new
+    const rightNew = document.getElementById('right_new');
+    rightNew.innerHTML = '';
+    this.articles.slice(0,5).forEach(a => {
+      const li = document.createElement('li');
+      li.innerHTML = `<a href="#" onclick="app.loadArticle('${a.id}')">${this.getTranslation(a).title}</a>`;
+      rightNew.appendChild(li);
+    });
+
+    // show home view
+    this.showSection('homeView');
+  },
+
+  updateRightPanel() {
+    document.getElementById('right_stats').textContent = `Статей: ${this.articles.length} · Збережено локально`;
+    this.updateProfileUI();
+  },
+
+  updateChangeBadge() {
+    const changesCount = Object.values(this.history).reduce((s,arr)=>s + (arr ? arr.length : 0),0);
+    document.getElementById('badge_changes').textContent = changesCount;
+  },
+
+  /* -----------------------
+     Translations
+     ----------------------- */
+  setLang(lang) {
+    this.lang = lang;
+    document.getElementById('lang_uk').classList.toggle('active', lang==='uk');
+    document.getElementById('lang_en').classList.toggle('active', lang==='en');
+    // re-render views
+    if(this.currentArticleId) this.loadArticle(this.currentArticleId);
+    else this.renderHome();
+  },
+
+  getTranslation(article) {
+    if(!article) return { title:'', intro:'', sections: [], image:'', stats:{} };
+    return (article.translations && article.translations[this.lang]) ? article.translations[this.lang] : article.translations['uk'];
+  },
+
+  /* -----------------------
+     Navigation Helpers
+     ----------------------- */
+  showSection(id) {
+    document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
+    const el = document.getElementById(id);
+    if(el) el.classList.remove('hidden');
+    // hide article edit area by default
+    this.cancelEdit();
+  },
+
+  showHome() { this.renderHome(); },
+
+  showRecent() {
+    this.showSection('recentView');
+    const list = document.getElementById('recent_list');
+    list.innerHTML = '';
+    const all = [];
+    for(const aid in this.history) {
+      (this.history[aid]||[]).forEach(h => all.push({...h, id: aid}));
+    }
+    all.sort((a,b) => new Date(b.date) - new Date(a.date));
+    if(all.length === 0) list.innerHTML = '<p>Немає останніх змін.</p>';
+    else list.innerHTML = all.map(h => `<div style="padding:8px;border-bottom:1px dashed #eee"><b>${h.user||'Анонім'}</b> — ${h.action} (<i>${formatDateISO(h.date)}</i>) — <a href="#" onclick="app.loadArticle('${h.id}')">${this.getTranslation(this.articles.find(x=>x.id===h.id)).title}</a></div>`).join('');
+  },
+
+  filterCategory(cat) {
+    const list = document.getElementById('articleList');
+    list.innerHTML = '';
+    this.articles.filter(a => a.category === cat).forEach(a => {
+      const tr = this.getTranslation(a);
+      const el = document.createElement('div'); el.className='card';
+      el.innerHTML = `<strong style="cursor:pointer" onclick="app.loadArticle('${a.id}')">${tr.title}</strong><div style="color:var(--muted)">${(tr.intro||'').slice(0,140)}</div>`;
+      list.appendChild(el);
+    });
+  },
+
+  /* -----------------------
+     Article viewing / editing
+     ----------------------- */
+  loadArticle(id) {
+    const art = this.articles.find(a=>a.id===id);
+    if(!art) { alert('Статтю не знайдено'); return; }
+    this.currentArticleId = id;
+
+    // increment views
+    const tr = this.getTranslation(art);
+    tr.stats = tr.stats || {};
+    tr.stats.views = (tr.stats.views || 0) + 1;
+    // persist back into article translations
+    art.translations[this.lang] = tr;
+    this.saveAll();
+
+    // fill UI
+    document.getElementById('article_title').textContent = tr.title;
+    document.getElementById('article_sub').textContent = (tr.image ? '' : '') ;
+    document.getElementById('meta_date').textContent = tr.stats.updated ? `Оновлено: ${formatDateISO(tr.stats.updated)}` : '';
+    document.getElementById('meta_views').textContent = `${tr.stats.views || 0} переглядів`;
+
+    // categories
+    const cats = document.getElementById('article_cats'); cats.innerHTML = '';
+    cats.innerHTML = `<span style="background:var(--paper);padding:.2rem .45rem;border-radius:6px;font-family:monospace">${art.category||'misc'}</span>`;
+
+    // infobox
+    const infobox = document.getElementById('article_infobox');
+    if(tr.image){
+      infobox.style.display = 'block';
+      infobox.innerHTML = `<img src="${tr.image}" alt="" style="width:100%;border-radius:6px;margin-bottom:8px"><b>${tr.title}</b>`;
+    } else infobox.style.display = 'none';
+
+    // render intro + sections as markdown
+    const content = document.getElementById('article_content');
+    let mdHtml = '';
+    if(tr.intro) mdHtml += marked.parse(tr.intro);
+    tr.sections.forEach(s => {
+      mdHtml += `<h2>${s.title}</h2>${marked.parse(s.content)}`;
+    });
+    content.innerHTML = mdHtml;
+
+    // Build simple TOC
+    const toc = document.getElementById('article_toc');
+    if(tr.sections.length){
+      toc.style.display = 'block';
+      toc.innerHTML = '<strong>Зміст</strong><ol style="padding-left:14px;margin:8px 0">' + tr.sections.map((s,i)=>`<li><a href="#sec-${i}" onclick="document.getElementById('sec-${i}').scrollIntoView({behavior:'smooth'})">${s.title}</a></li>`).join('') + '</ol>';
+      // add anchors to sections
+      const headings = content.querySelectorAll('h2');
+      headings.forEach((h,idx)=> h.id = `sec-${idx}`);
+    } else { toc.style.display = 'none'; toc.innerHTML = ''; }
+
+    // clear edit area
+    this.cancelEdit();
+
+    // comments, history
+    this.renderComments();
+    this.renderHistory();
+
+    // show article
+    this.showSection('articleView');
+  },
+
+  enableEdit() {
+    if(!this.user){ this.openLogin(); return; }
+    const art = this.articles.find(a=>a.id===this.currentArticleId); if(!art) return;
+    const tr = this.getTranslation(art);
+
+    // show edit area and populate fields
+    document.getElementById('edit_title').value = tr.title || '';
+    document.getElementById('edit_intro').value = tr.intro || '';
+    document.getElementById('edit_image').value = tr.image || '';
+    const sectionsEdit = document.getElementById('sections_edit');
+    sectionsEdit.innerHTML = '';
+    (tr.sections || []).forEach((s, idx)=> {
+      sectionsEdit.insertAdjacentHTML('beforeend', `<div class="section-block" data-idx="${idx}">
+        <input class="s_title" placeholder="Назва секції" value="${s.title.replace(/"/g,'&quot;')}" />
+        <textarea class="s_content" rows="4">${s.content.replace(/</g,'&lt;')}</textarea>
+        <div style="text-align:right"><button class="btn" onclick="app.removeSection(this)">Видалити секцію</button></div>
+      </div>`);
+    });
+
+    document.getElementById('editArea').classList.remove('hidden');
+    // scroll into view
+    document.getElementById('editArea').scrollIntoView({behavior:'smooth'});
+  },
+
+  addSection() {
+    const sectionsEdit = document.getElementById('sections_edit');
+    sectionsEdit.insertAdjacentHTML('beforeend', `<div class="section-block">
+        <input class="s_title" placeholder="Назва секції" />
+        <textarea class="s_content" rows="4"></textarea>
+        <div style="text-align:right"><button class="btn" onclick="app.removeSection(this)">Видалити секцію</button></div>
+      </div>`);
+  },
+
+  removeSection(btn) {
+    const block = btn.closest('.section-block');
+    if(block) block.remove();
+  },
+
+  saveEdit() {
+    const art = this.articles.find(a=>a.id===this.currentArticleId); if(!art) return;
+    const tr = this.getTranslation(art);
+
+    const newTitle = document.getElementById('edit_title').value.trim();
+    const newIntro = document.getElementById('edit_intro').value.trim();
+    const newImage = document.getElementById('edit_image').value.trim();
+
+    const secBlocks = Array.from(document.querySelectorAll('#sections_edit .section-block'));
+    const newSections = secBlocks.map(b => {
+      return {
+        title: b.querySelector('.s_title').value.trim() || 'Без назви',
+        content: b.querySelector('.s_content').value.trim()
+      };
+    });
+
+    // apply
+    tr.title = newTitle || tr.title;
+    tr.intro = newIntro;
+    tr.image = newImage;
+    tr.sections = newSections;
+    tr.stats = tr.stats || {};
+    tr.stats.updated = (new Date()).toISOString();
+
+    // store back
+    art.translations[this.lang] = tr;
+
+    // history entry
+    if(!this.history[art.id]) this.history[art.id] = [];
+    this.history[art.id].push({
+      date: (new Date()).toISOString(),
+      user: this.user || 'Анонім',
+      action: `Редагування (${this.lang})`
+    });
+
+    // edits counter
+    if(this.user){
+      this.edits[this.user] = (this.edits[this.user] || 0) + 1;
+    }
+
+    this.saveAll();
+    this.updateChangeBadge();
+    this.updateProfileUI();
+    this.loadArticle(art.id);
+    alert(this.getUIText('alert_saved'));
+  },
+
+  cancelEdit() {
+    document.getElementById('editArea').classList.add('hidden');
+  },
+
+  /* -----------------------
+     Comments
+     ----------------------- */
+  renderComments() {
+    const container = document.getElementById('comments_list');
+    const id = this.currentArticleId;
+    const list = (this.comments[id] && this.comments[id][this.lang]) ? this.comments[id][this.lang] : [];
+    document.getElementById('talk_count').textContent = `(${list.length})`;
+    if(list.length === 0) container.innerHTML = '<p style="color:var(--muted)">Коментарів немає — будь першим.</p>';
+    else container.innerHTML = list.map(c => `<div style="padding:8px;border-bottom:1px dashed #eee"><b>${c.name}</b> <small style="color:var(--muted)">• ${formatDateISO(c.date)}</small><div style="margin-top:6px">${marked.parseInline(c.text)}</div></div>`).join('');
+  },
+
+  addComment() {
+    const id = this.currentArticleId;
+    if(!id) return alert('Відкрий статтю, щоб коментувати.');
+    const nameInput = document.getElementById('comment_name').value.trim();
+    const text = document.getElementById('comment_text').value.trim();
+    if(!text) return alert('Напишіть коментар.');
+    const name = nameInput || this.user || 'Анонім';
+
+    if(!this.comments[id]) this.comments[id] = {};
+    if(!this.comments[id][this.lang]) this.comments[id][this.lang] = [];
+    this.comments[id][this.lang].push({ name, text, date: (new Date()).toISOString() });
+
+    // store
+    this.saveAll();
+    document.getElementById('comment_text').value = '';
+    document.getElementById('comment_name').value = '';
+    this.renderComments();
+
+    // profile stat
+    this.updateProfileUI();
+  },
+
+  /* -----------------------
+     History
+     ----------------------- */
+  renderHistory() {
+    const id = this.currentArticleId; const container = document.getElementById('history_list');
+    const logs = this.history[id] || [];
+    if(logs.length === 0) { container.innerHTML = '<p style="color:var(--muted)">Історія порожня.</p>'; return; }
+    container.innerHTML = logs.slice().reverse().map(l => `<div style="padding:8px;border-bottom:1px dashed #eee"><b>${l.user||'Анонім'}</b> — ${l.action} <div style="color:var(--muted);font-size:.85rem">${formatDateISO(l.date)}</div></div>`).join('');
+  },
+
+  /* -----------------------
+     Export (Markdown)
+     ----------------------- */
+  exportMarkdown() {
+    const id = this.currentArticleId; if(!id) return;
+    const art = this.articles.find(a=>a.id===id); const tr = this.getTranslation(art);
+    let md = `# ${tr.title}\n\n${tr.intro}\n\n`;
+    tr.sections.forEach(s => {
+      md += `## ${s.title}\n${s.content}\n\n`;
+    });
+    // generate file
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = `${slugToFilename(tr.title)}.md`; document.body.appendChild(a); a.click(); a.remove();
+  },
+
+  /* -----------------------
+     Search
+     ----------------------- */
+  search() {
+    const q = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+    const cat = document.getElementById('searchCategory').value || '';
+    const results = this.articles.filter(a => {
+      if(cat && a.category !== cat) return false;
+      const tr = (a.translations && a.translations[this.lang]) ? a.translations[this.lang] : a.translations['uk'];
+      const hay = `${tr.title} ${tr.intro} ${tr.sections.map(s=>s.title+' '+s.content).join(' ')}`.toLowerCase();
+      const keywords = (tr.keywords||[]).join(' ').toLowerCase();
+      return (!q) || hay.includes(q) || keywords.includes(q) || tr.title.toLowerCase().includes(q);
+    });
+
+    // render search results into articleList and switch home
+    const container = document.getElementById('articleList'); container.innerHTML = '';
+    if(results.length === 0) container.innerHTML = `<div class="card">Нічого не знайдено за запитом <b>${q}</b></div>`;
+    else results.forEach(a => {
+      const tr = this.getTranslation(a);
+      const el = document.createElement('div'); el.className = 'card';
+      const highlightedTitle = q ? tr.title.replace(new RegExp(q,'gi'), m=>`<mark>${m}</mark>`) : tr.title;
+      el.innerHTML = `<strong style="font-size:1rem;cursor:pointer" onclick="app.loadArticle('${a.id}')">${highlightedTitle}</strong>
+                      <div style="color:var(--muted)">${(tr.intro||'').slice(0,160)}${(tr.intro||'').length>160?'…':''}</div>`;
+      container.appendChild(el);
+    });
+    this.showSection('homeView');
+  },
+
+  /* -----------------------
+     Requests (simple)
+     ----------------------- */
+  openRequest() { this.showSection('requestView'); }
+
+  ,submitRequest(e) {
+    e.preventDefault();
+    const t = document.getElementById('req_title').value.trim();
+    const d = document.getElementById('req_desc').value.trim();
+    if(!t) return alert('Вкажіть назву.');
+    const reqs = loadJSON(STORAGE_KEYS.REQUESTS, []);
+    reqs.unshift({ title: t, desc: d, date: (new Date()).toISOString(), user: this.user || 'Анонім' });
+    saveJSON(STORAGE_KEYS.REQUESTS, reqs);
+    alert('Запит відправлено (локально).');
+    document.getElementById('req_title').value=''; document.getElementById('req_desc').value='';
+    this.showHome();
+  },
+
+  /* -----------------------
+     Profile / Login
+     ----------------------- */
+  openProfile(){ this.showSection('profileView'); this.updateProfileUI(); }
+
+  ,openLogin(){ document.getElementById('modal_login').style.display='flex'; document.getElementById('modal_nick').value = this.user || ''; document.getElementById('modal_nick').focus(); }
+
+  ,closeLogin(){ document.getElementById('modal_login').style.display='none'; }
+
+  ,saveLogin(){ const nick = document.getElementById('modal_nick').value.trim(); if(!nick) return alert('Введіть нік.'); this.user = nick; localStorage.setItem(STORAGE_KEYS.USER, nick); document.getElementById('ui_username').textContent = nick; this.closeLogin(); this.updateProfileUI(); }
+
+  ,logout(){ if(confirm('Вийти (нік буде видалено локально)?')){ localStorage.removeItem(STORAGE_KEYS.USER); this.user = null; document.getElementById('ui_username').textContent = '—'; this.updateProfileUI(); } }
+
+  ,updateProfileUI(){
+    document.getElementById('profile_nick').textContent = this.user || '—';
+    document.getElementById('profile_edits').textContent = this.user ? (this.edits[this.user] || 0) : 0;
+    // comments count for user
+    let commentsCount = 0;
+    for(const id in this.comments){
+      for(const lang in this.comments[id]){
+        (this.comments[id][lang]||[]).forEach(c => { if(c.name === this.user) commentsCount++; });
+      }
+    }
+    document.getElementById('profile_comments').textContent = commentsCount;
+    document.getElementById('ui_username').textContent = this.user || '—';
+  },
+
+  updateProfileAfterEdit() {
+    if(!this.user) return;
+    // store edits count into edits map and save
+    this.edits[this.user] = (this.edits[this.user] || 0) + 0; // already updated in saveEdit
+    saveJSON(STORAGE_KEYS.EDITS, this.edits);
+    this.updateProfileUI();
+  },
+
+  /* -----------------------
+     Recent / Random
+     ----------------------- */
+  randomArticle() {
+    const id = this.articles[Math.floor(Math.random() * this.articles.length)].id;
+    this.loadArticle(id);
+  },
+
+  /* -----------------------
+     Utility UI
+     ----------------------- */
+  openProfileModal: null,
+
+  switchTab(evt, tabName) {
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    evt.currentTarget.classList.add('active');
+    document.getElementById('tab_content').classList.toggle('hidden', tabName !== 'content');
+    document.getElementById('tab_talk').classList.toggle('hidden', tabName !== 'talk');
+    document.getElementById('tab_history').classList.toggle('hidden', tabName !== 'history');
+    if(tabName === 'talk') this.renderComments();
+    if(tabName === 'history') this.renderHistory();
+  },
+
+  enableDarkMode(flag) { this.darkMode = flag; document.body.classList.toggle('dark', !!flag); localStorage.setItem(STORAGE_KEYS.DARK, !!flag); }
+  ,toggleDarkMode(){ this.enableDarkMode(!this.darkMode); }
+
+  ,openProfile() { this.openProfile(); }
+
+  ,openLoginDialog() { this.openLogin(); }
+
+  ,openProfile(){ this.showSection('profileView'); this.updateProfileUI(); }
+
+  ,openRequest(){ this.showSection('requestView'); }
+
+  ,showHome(){ this.showSection('homeView'); }
+
+  ,clearLocal(){ if(confirm('Прибрати всі локальні дані (статті не видаляються, але історія і коментарі очистяться)?')){ localStorage.removeItem(STORAGE_KEYS.COMMENTS); localStorage.removeItem(STORAGE_KEYS.HISTORY); localStorage.removeItem(STORAGE_KEYS.EDITS); localStorage.removeItem(STORAGE_KEYS.REQUESTS); localStorage.removeItem(STORAGE_KEYS.USER); this.comments={}; this.history={}; this.edits={}; this.user=null; this.updateProfileUI(); alert('Очищено.'); } }
+
+  ,updateChangeBadge() { this.updateChangeBadge(); } // wrapper
+
+  ,getUIText(key) {
+    const i18n = {
+      uk: { alert_saved: 'Статтю збережено!', alert_not_found: 'Нічого не знайдено' },
+      en: { alert_saved: 'Article saved!', alert_not_found: 'Nothing found' }
+    };
+    return (i18n[this.lang] && i18n[this.lang][key]) ? i18n[this.lang][key] : i18n['uk'][key];
+  },
+
+  /* Expose simple globals for onclicks used in HTML */
+};
+
+/* Expose some functions used inline (legacy onclick attributes) */
+window.app = {
+  init: ()=>app.init(),
+  renderHome: ()=>app.renderHome(),
+  showHome: ()=>app.showHome(),
+  loadArticle: (id)=>app.loadArticle(id),
+  search: ()=>app.search(),
+  saveLogin: ()=>app.saveLogin(),
+  openLogin: ()=>app.openLogin(),
+  closeLogin: ()=>app.closeLogin(),
+  saveLoginDialog: ()=>app.saveLogin(),
+  addComment: ()=>app.addComment(),
+  enableEdit: ()=>app.enableEdit(),
+  cancelEdit: ()=>app.cancelEdit(),
+  saveEdit: ()=>app.saveEdit(),
+  addSection: ()=>app.addSection(),
+  removeSection: (btn)=>app.removeSection(btn),
+  exportMarkdown: ()=>app.exportMarkdown(),
+  setLang: (l)=>{ app.setLang(l); },
+  toggleDarkMode: ()=>app.toggleDarkMode(),
+  toggleDark: ()=>app.toggleDarkMode(),
+  openProfile: ()=>app.openProfile(),
+  openRequest: ()=>app.openRequest(),
+  submitRequest: (e)=>app.submitRequest(e),
+  randomArticle: ()=>app.randomArticle(),
+  showRecent: ()=>app.showRecent(),
+  filterCategory: (c)=>app.filterCategory(c),
+  showSection: (id)=>app.showSection(id),
+  openProfileModal: ()=>app.openLogin()
+};
+
+/* Wire up modal buttons */
+document.addEventListener('DOMContentLoaded', ()=> {
+  // init
+  app.init();
+
+  // modal save (hooked to DOM)
+  document.querySelectorAll('#modal_login .btn-solid').forEach(b => b.addEventListener('click', ()=>{ app.saveLogin(); }));
+  // hide login when clicked outside box
+  document.getElementById('modal_login').addEventListener('click', (e)=>{ if(e.target === e.currentTarget) app.closeLogin(); });
+
+  // assign inline onclicks that call app.switchTab properly (pass event)
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', (ev)=>{
+      const tab = btn.getAttribute('data-tab') || 'content';
+      app.switchTab(ev, tab);
+    });
+  });
+
+  // preselect language button visuals
+  app.setLang(app.lang);
+});
 </script>
 </body>
 </html>
